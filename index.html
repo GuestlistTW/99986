@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#140b24">
 <title>彩虹乾杯輪盤</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,8 +20,11 @@
   --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   color-scheme:dark;
 }
+[hidden]{display:none!important}
 *{box-sizing:border-box}
 html,body{height:100%}
+body{margin:0}
+img{max-width:100%}
 body{
   background:var(--night); color:var(--ink); font-family:var(--f-zh); font-size:15px;
   background-image:
@@ -130,10 +139,12 @@ input[type=text],input[type=search]{width:100%;background:var(--night);color:var
 .chip{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;background:var(--green);color:var(--night);font-weight:900;margin-left:6px}
 .chip.won{background:var(--muted)}
 .warn{color:var(--yellow);font-size:13px;line-height:1.55}
-@media (max-width:860px){.stage{gap:18px}.wheel-wrap{max-width:440px}.result{min-height:220px;padding:20px}.spin{width:100%}}
+@media (max-width:860px){.stage{gap:18px}.wheel-wrap{max-width:440px}.result{min-height:220px;padding:20px}.spin{width:100%}.spin-row{order:-1}}
 .who-no{font-family:var(--f-mono);font-size:14px;color:var(--muted);margin-top:4px}
 </style>
 
+</head>
+<body>
 <canvas id="confetti"></canvas>
 <div class="stripe" aria-hidden="true"></div>
 <header>
@@ -459,9 +470,11 @@ function drawWheel(){
     ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a0+seg);ctx.closePath();
     ctx.fillStyle=col;ctx.fill();ctx.lineWidth=S*0.006;ctx.strokeStyle="#140b24";ctx.stroke();
     ctx.save();ctx.rotate(a0+seg/2);ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillStyle=TEXT_ON[col]||"#fff7ea";
-    const fz=Math.max(10,Math.min(S*0.05,S*0.32/Math.max(3,opts[i].zh.length)));
-    ctx.font=`900 ${fz}px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;ctx.fillText(opts[i].zh,R*0.9,-fz*0.32);
-    ctx.font=`400 ${Math.max(8,fz*0.5)}px "Bungee",sans-serif`;ctx.globalAlpha=.85;ctx.fillText(opts[i].en.toUpperCase(),R*0.9,fz*0.55);
+    const maxW=R*0.58, ZH='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+    let fz=S*0.05;ctx.font=`900 ${fz}px ${ZH}`;const w=ctx.measureText(opts[i].zh).width;if(w>maxW){fz*=maxW/w;ctx.font=`900 ${fz}px ${ZH}`}
+    ctx.fillText(opts[i].zh,R*0.9,-fz*0.32);
+    const en=opts[i].en.toUpperCase();let ez=Math.max(8,S*0.025);ctx.font=`400 ${ez}px "Bungee",sans-serif`;const ew=ctx.measureText(en).width;if(ew>maxW){ez*=maxW/ew;ctx.font=`400 ${ez}px "Bungee",sans-serif`}
+    ctx.globalAlpha=.85;ctx.fillText(en,R*0.9,fz*0.3+ez*0.9);
     ctx.restore();
   }
   for(let i=0;i<n*3;i++){const a=i*2*Math.PI/(n*3);ctx.beginPath();ctx.arc(Math.cos(a)*(R+S*0.01),Math.sin(a)*(R+S*0.01),S*0.007,0,2*Math.PI);ctx.fillStyle=i%2?"#ffd23f":"#ff3b4f";ctx.fill()}
@@ -553,3 +566,6 @@ load();sizeWheel();
 if(document.fonts)document.fonts.ready.then(drawWheel);
 })();
 </script>
+
+</body>
+</html>

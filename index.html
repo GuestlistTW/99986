@@ -1,441 +1,555 @@
-<!doctype html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>【TW Pride】10/24 週五晚餐名單確認｜Reservation Confirmation</title>
-  <style>
-    :root{
-      --bg:#0A0B0F; --card:#10131A; --muted:#9AA4AF; --fg:#F2F5F8; --border:#1f2430;
-      --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
-      --rainbow: linear-gradient(90deg,#ff5f6d,#ffc371,#9be15d,#00e3ae,#45aaf2,#9b59b6);
-      --accent: #e5e7eb;
-      --cyan-grad: linear-gradient(90deg,#5eead4,#60a5fa);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui; background:radial-gradient(800px 600px at 10% -10%, rgba(255,255,255,.06), transparent), var(--bg); color:var(--fg)}
-    a{color:inherit}
+<title>彩虹乾杯輪盤</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Noto+Sans+TC:wght@500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: one projection-sized stage — wheel left, reveal panel right; list & settings in a slide-over drawer. Single night-parade look. */
+:root{
+  --night:#140b24; --night-2:#1f1236; --line:#3a2a5c; --ink:#fff7ea; --muted:#bfaedc;
+  --red:#ff3b4f; --orange:#ff8a1f; --yellow:#ffd23f; --green:#2fd27a; --blue:#2f8cff; --violet:#a34dff;
+  --pink:#ff8fc7; --sky:#6fd3ff;
+  --f-display:"Bungee","Noto Sans TC",system-ui,sans-serif;
+  --f-zh:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--night); color:var(--ink); font-family:var(--f-zh); font-size:15px;
+  background-image:
+    radial-gradient(60vmax 40vmax at 10% -10%, #3b1a5e 0%, transparent 60%),
+    radial-gradient(50vmax 40vmax at 110% 110%, #4a1340 0%, transparent 60%);
+  background-attachment:fixed;
+  padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+  padding-block:16px; overflow-x:hidden;
+}
+.stripe{height:8px;border-radius:99px;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow),var(--green),var(--blue),var(--violet),var(--pink),var(--sky),#fff);}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:14px 0 10px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.brand h1{margin:0;font-family:var(--f-display);font-size:clamp(26px,4vw,44px);line-height:1;letter-spacing:.01em;text-wrap:balance}
+.brand h1 .zh{font-family:var(--f-zh);font-weight:900}
+.hdr-actions{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+.btn{background:var(--night-2);border:1.5px solid var(--line);padding:9px 14px;border-radius:999px;font-weight:700;font-size:14px}
+.btn:hover{border-color:var(--muted)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 
-    .wrap{max-width:980px;margin:28px auto 64px;padding:0 14px}
-    .title{font-size:26px;font-weight:900;letter-spacing:.3px;margin:4px 0 6px;color:#fff}
-    .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
-    .rainbow-line{height:2px;background:var(--rainbow);opacity:.65;border-radius:2px;margin:6px 0 14px}
+.stage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:center;min-height:calc(100% - 110px)}
+@media (max-width:860px){.stage{grid-template-columns:1fr}}
 
-    .card{position:relative;border-radius:16px;padding:14px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.03)}
-    .row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,2fr) minmax(0,1fr);gap:8px;align-items:end}
-    label{font-size:12px;color:var(--muted);margin-bottom:4px;display:block}
-    .input-wrap{display:flex;flex-direction:column;min-width:0}
-    input,button{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--border);background:#0f1117;color:#e5e7eb;outline:none;font-size:14px}
-    input::placeholder{color:#6b7280}
-    button.primary{background:var(--cyan-grad);border:0;color:#0b0c10;font-weight:900}
-    button.primary:hover{filter:brightness(1.05)}
-    button.primary:active{transform:translateY(1px)}
+.wheel-wrap{position:relative;width:100%;max-width:640px;aspect-ratio:1;margin-inline:auto}
+#wheel{width:100%;height:100%;display:block;filter:drop-shadow(0 18px 40px rgba(0,0,0,.45))}
+.pointer{position:absolute;left:50%;top:-6px;width:54px;height:66px;transform:translateX(-50%);transform-origin:50% 12px;z-index:2}
+.pointer svg{width:100%;height:100%;display:block}
+.pointer.tick{animation:tick .12s ease-out}
+@keyframes tick{40%{transform:translateX(-50%) rotate(-14deg)}}
+.hub{position:absolute;inset:0;margin:auto;width:24%;height:24%;border-radius:50%;
+  background:var(--night);border:6px solid var(--ink);display:grid;place-items:center;text-align:center;z-index:1;
+  box-shadow:0 0 0 6px var(--night),0 0 30px rgba(255,210,63,.35)}
+.hub b{font-family:var(--f-display);font-size:clamp(12px,2.2vw,22px);line-height:1}
+.hub small{display:block;font-family:var(--f-mono);font-size:clamp(9px,1.1vw,12px);color:var(--muted);margin-top:4px}
 
-    .result-head{font-size:13px;color:var(--muted);margin:10px 2px 6px}
+.panel{display:flex;flex-direction:column;gap:18px;min-width:0}
+.result{background:var(--night-2);border:2px solid var(--line);border-radius:28px;padding:28px 26px;min-height:300px;
+  display:flex;flex-direction:column;justify-content:center;gap:12px;position:relative;overflow:hidden}
+.result .label{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.task-zh{font-weight:900;font-size:clamp(34px,5vw,64px);line-height:1.05;text-wrap:balance}
+.task-en{font-family:var(--f-display);font-size:clamp(16px,2.2vw,26px);color:var(--yellow)}
+.who{margin-top:6px;padding-top:16px;border-top:2px dashed var(--line);min-height:104px}
+.who-name{font-weight:900;font-size:clamp(36px,5.4vw,70px);line-height:1.05;word-break:break-word}
+.who-ig{font-family:var(--f-mono);font-weight:700;font-size:clamp(18px,2.4vw,28px);color:var(--sky);word-break:break-all}
+.who.rolling .who-name{color:var(--muted);filter:blur(.6px)}
+.who.done .who-name{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.hint{color:var(--muted);font-size:15px;line-height:1.6}
 
-    .grid{display:flex;flex-direction:column;gap:6px}
-    .person{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr;gap:8px}
-    .line{display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .left, .right{display:flex;gap:10px;align-items:center;min-width:0}
-    .left .flag{font-size:18px}
-    .row1{display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:10px;align-items:center}
-    .cell{min-width:0}
-    .label{font-size:11px;color:#9aa4af;margin-bottom:2px}
-    .val{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .name-val{font-weight:800}
-    .ig{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spin-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.spin{font-family:var(--f-display);font-size:clamp(22px,2.8vw,32px);padding:18px 36px;border-radius:999px;color:var(--night);
+  background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow),var(--green),var(--blue),var(--violet));
+  background-size:200% 100%;box-shadow:0 8px 0 #000a, 0 0 0 4px var(--ink) inset;transition:transform .1s, box-shadow .1s}
+.spin:hover{animation:slide 2s linear infinite}
+.spin:active{transform:translateY(4px);box-shadow:0 4px 0 #000a, 0 0 0 4px var(--ink) inset}
+.spin:disabled{filter:grayscale(.7) brightness(.7);cursor:not-allowed;animation:none}
+@keyframes slide{to{background-position:200% 0}}
+.spin .zh{font-family:var(--f-zh);font-weight:900}
+.stats{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;gap:14px;flex-wrap:wrap}
+.stats b{color:var(--ink)}
+.sample-tag{display:inline-block;background:var(--yellow);color:var(--night);font-weight:900;border-radius:6px;padding:1px 7px;font-size:12px;font-family:var(--f-zh)}
 
-    .status{display:inline-flex;align-items:center;gap:8px}
-    .badge{width:22px;height:22px;border-radius:999px;display:grid;place-items:center;background:transparent}
-    .badge svg{width:14px;height:14px}
-    .badge.ok{border:2px solid var(--ok)}
-    .badge.warn{border:2px solid var(--warn)}
-    .badge.bad{border:2px solid var(--bad)}
-    .status-label{font-size:13px;color:#e5e7eb}
+.winners{background:transparent;border:1.5px solid var(--line);border-radius:18px;padding:14px 16px}
+.winners h2{margin:0 0 8px;font-size:14px;font-family:var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;display:flex;justify-content:space-between;gap:8px}
+.winners ol{margin:0;padding-left:26px;max-height:170px;overflow:auto;display:flex;flex-direction:column;gap:4px;font-variant-numeric:tabular-nums}
+.winners li{line-height:1.4}
+.winners li span{color:var(--muted);font-size:13px}
+.winners li .ig{color:var(--sky);font-family:var(--f-mono);font-size:13px}
+.empty{color:var(--muted);font-size:14px}
 
-    .link-btn{padding:8px 10px;border-radius:10px;border:1px solid #2b3244;background:#0f1117;color:#e5e7eb;text-decoration:none;font-size:12px}
-    .link-btn:hover{border-color:#3b82f6}
+/* drawer */
+.scrim{position:fixed;inset:0;background:#0009;z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--night-2);border-left:2px solid var(--line);z-index:21;
+  padding:calc(20px + env(safe-area-inset-top,0px)) max(20px, env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) 20px;overflow:auto;display:flex;flex-direction:column;gap:18px}
+.drawer h2{margin:0;font-weight:900;font-size:22px}
+.drawer h3{margin:0 0 6px;font-size:15px}
+.drawer p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.6}
+textarea{width:100%;min-height:200px;background:var(--night);color:var(--ink);border:1.5px solid var(--line);border-radius:12px;padding:12px;font-family:var(--f-mono);font-size:13px;line-height:1.55;resize:vertical}
+#optsInput{min-height:240px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn.primary{background:var(--yellow);color:var(--night);border-color:var(--yellow)}
+label.check{display:flex;gap:8px;align-items:center;font-size:14px}
+.file{position:relative;overflow:hidden}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.msg{font-size:13px;color:var(--green);min-height:1.2em}
+code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-radius:5px}
 
-    .actions{display:flex;gap:10px;justify-content:space-between}
-    .btn{padding:9px 12px;border-radius:12px;border:1px solid #2b3244;background:#0f1117;color:#e5e7eb;cursor:pointer;font-weight:800;font-size:13px}
-    .btn:hover{border-image:var(--rainbow) 1;border-width:1px;border-style:solid}
-    .btn:active{transform:translateY(1px)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:30;width:100%;height:100%}
+@media (prefers-reduced-motion:reduce){.spin:hover{animation:none}.pointer.tick{animation:none}.who.done .who-name{animation:none}}
 
-    /* 右下角貓（僅上傳底圖） */
-    .cats{position:fixed;right:12px;bottom:12px;display:flex;gap:8px;opacity:.9;z-index:30}
-    .cat-btn{width:56px;height:56px;border-radius:50%;background:#0f1117;border:1px solid #2b3244;display:grid;place-items:center;cursor:pointer;transition:transform .08s ease, box-shadow .2s}
-    .cat-btn:hover{box-shadow:0 0 0 2px rgba(255,255,255,.06), 0 8px 20px rgba(0,0,0,.35)}
-    .cat-btn:active{transform:scale(.97)}
-    .cat svg{width:30px;height:30px;stroke:#e5e7eb}
+/* v2: list management */
+.drawer{width:min(620px,100%)}
+.sec{display:flex;flex-direction:column;gap:10px;padding-bottom:18px;border-bottom:1.5px solid var(--line)}
+.sec:last-of-type{border-bottom:0}
+.add-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px}
+@media (max-width:480px){.add-form{grid-template-columns:1fr}}
+input[type=text],input[type=search]{width:100%;background:var(--night);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px}
+.preview{background:var(--night);border:1.5px dashed var(--yellow);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.preview b{color:var(--yellow)}
+.people{border:1.5px solid var(--line);border-radius:12px;max-height:330px;overflow:auto}
+.people table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.people th{position:sticky;top:0;background:var(--night-2);text-align:left;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:500;padding:8px 10px;border-bottom:1.5px solid var(--line)}
+.people td{padding:6px 10px;border-bottom:1px solid #2a1d44;vertical-align:middle}
+.people td.ig{font-family:var(--f-mono);color:var(--sky);word-break:break-all}
+.people td.no{font-family:var(--f-mono);color:var(--muted);white-space:nowrap}
+.people tr.won td{opacity:.45}
+.people tr.new td:first-child{box-shadow:inset 4px 0 var(--green)}
+.x{background:transparent;border:1.5px solid var(--line);border-radius:8px;padding:2px 8px;font-size:12px;color:var(--muted)}
+.x:hover{border-color:var(--red);color:var(--red)}
+.x.armed{background:var(--red);border-color:var(--red);color:#fff}
+.chip{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;background:var(--green);color:var(--night);font-weight:900;margin-left:6px}
+.chip.won{background:var(--muted)}
+.warn{color:var(--yellow);font-size:13px;line-height:1.55}
+@media (max-width:860px){.stage{gap:18px}.wheel-wrap{max-width:440px}.result{min-height:220px;padding:20px}.spin{width:100%}}
+.who-no{font-family:var(--f-mono);font-size:14px;color:var(--muted);margin-top:4px}
+</style>
 
-    .toast{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);background:#0f1117;border:1px solid #2b3244;color:#e5e7eb;padding:8px 12px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;transition:opacity .25s;z-index:60}
-    .toast.show{opacity:1}
+<canvas id="confetti"></canvas>
+<div class="stripe" aria-hidden="true"></div>
+<header>
+  <div class="brand">
+    <span class="eyebrow">Taiwan Pride 2026 · 24th · 10.31 Taipei</span>
+    <h1><span class="zh">彩虹乾杯輪盤</span> PRIDE SPIN</h1>
+  </div>
+  <div class="hdr-actions">
+    <button class="btn" id="quickAdd" type="button">＋ 臨時加人</button>
+    <button class="btn" id="openDrawer" type="button">名單 / 設定</button>
+    <button class="btn" id="soundBtn" type="button" aria-pressed="true">音效 開</button>
+    <button class="btn" id="fsBtn" type="button">全螢幕</button>
+  </div>
+</header>
 
-    .backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:50}
-    .modal{width:min(640px,92vw);background:#0f1117;border-radius:16px;border:1px solid #2b3244;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-    .modal .title2{margin:0 0 10px;font-size:18px;font-weight:800}
-    .modal .rb{height:2px;background:var(--rainbow);opacity:.55;border-radius:2px;margin-bottom:10px}
-    .opts{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 8px}
-    .opt{flex:1;min-width:240px;padding:10px 12px;border-radius:12px;border:1px dashed #2b3244;background:#0f1117;color:#9aa4af;cursor:pointer;text-align:center;font-weight:800}
-    .opt.active{color:#0b0c10;background:var(--cyan-grad);border:0}
-    textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #2b3244;background:#0f1117;color:#e5e7eb;min-height:90px}
-    .modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
-    .btn-line{border:1px solid #2b3244;background:#0f1117;color:#e5e7eb}
-    .btn-fill{background:transparent;border:1px solid transparent;border-image:var(--rainbow) 1;font-weight:900}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
+<main class="stage">
+  <div class="wheel-wrap">
+    <div class="pointer" id="pointer" aria-hidden="true">
+      <svg viewBox="0 0 54 66"><path d="M27 64 L4 14 A24 24 0 1 1 50 14 Z" fill="#fff7ea" stroke="#140b24" stroke-width="4"/><circle cx="27" cy="20" r="8" fill="#ff3b4f"/></svg>
+    </div>
+    <canvas id="wheel" width="640" height="640" aria-label="抽獎輪盤"></canvas>
+    <div class="hub"><div><b>PRIDE</b><small id="hubCount">0 人</small></div></div>
+  </div>
 
-    .preview{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
-    .preview img{max-height:86px;border-radius:8px;border:1px solid #2b3244}
+  <section class="panel">
+    <div class="result" id="result" aria-live="polite">
+      <span class="label" id="resLabel">準備好了嗎 / Ready?</span>
+      <div class="task-zh" id="taskZh">按下轉盤開始</div>
+      <div class="task-en" id="taskEn">Spin the wheel!</div>
+      <div class="who" id="who">
+        <div class="hint" id="whoHint">轉盤決定任務，再從名單隨機跳出一位幸運兒，顯示名字與 IG。</div>
+        <div class="who-name" id="whoName"></div>
+        <div class="who-ig" id="whoIg"></div>
+        <div class="who-no" id="whoNo"></div>
+      </div>
+    </div>
+    <div class="spin-row">
+      <button class="spin" id="spinBtn" type="button"><span class="zh">轉！</span> SPIN</button>
+      <div class="stats">
+        <span>名單 <b id="sTotal">0</b></span>
+        <span>待抽 <b id="sLeft">0</b></span>
+        <span>已抽 <b id="sDone">0</b></span>
+        <span id="sampleTag" hidden><span class="sample-tag">範例名單</span></span>
+      </div>
+    </div>
+    <div class="winners">
+      <h2><span>抽中紀錄 Winners</span><button class="btn" id="resetBtn" type="button" style="padding:3px 10px;font-size:12px">清除紀錄</button></h2>
+      <ol id="winList"></ol>
+      <div class="empty" id="winEmpty">還沒有人被抽中。</div>
+    </div>
+  </section>
+</main>
 
-    @media (max-width:860px){.row{grid-template-columns:1fr}.actions{flex-direction:column}.row1{grid-template-columns:24px 1fr 1fr;grid-auto-rows:auto}}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="title">【TW Pride】10/24 週五晚餐名單確認｜Reservation Confirmation</div>
-    <div class="rainbow-line"></div>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-label="名單與設定">
+  <div class="row" style="justify-content:space-between"><h2>名單與設定</h2><button class="btn" id="closeDrawer" type="button">關閉</button></div>
 
-    <div class="card">
+  <section class="sec" id="secAdd">
+    <h3>臨時加人</h3>
+    <form class="add-form" id="addForm" autocomplete="off">
+      <input type="text" id="addName" placeholder="名字（必填）" aria-label="名字">
+      <input type="text" id="addIg" placeholder="IG 帳號（可空白）" aria-label="IG 帳號">
+      <button class="btn primary" type="submit">加入</button>
+    </form>
+    <span class="msg" id="addMsg"></span>
+  </section>
+
+  <section class="sec">
+    <h3>匯入報名表</h3>
+    <p>直接上傳報名 Excel（.xlsx）或 CSV。會自動找「姓名」「IG帳號」「報名編號」「報名狀態」欄位；狀態寫「取消」的不會匯入，IG 填「無」視為沒有 IG。也可以把兩欄（名字、IG）從 Excel 複製貼到下方。</p>
+    <div class="row">
+      <span class="btn file">上傳 Excel / CSV<input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.txt"></span>
+      <button class="btn" id="reloadEmbed" type="button">重新載入內建報名名單</button>
+    </div>
+    <textarea id="pasteInput" spellcheck="false" placeholder="貼上：每行一位&#10;小明, @ming_pride&#10;Alex	alex.rainbow" style="min-height:110px"></textarea>
+    <div class="row"><button class="btn" id="pasteBtn" type="button">讀取貼上的內容</button></div>
+    <div class="preview" id="preview" hidden>
+      <div id="previewText"></div>
+      <div class="warn" id="previewWarn"></div>
       <div class="row">
-        <div class="input-wrap">
-          <label>姓名 / NAME</label>
-          <input id="nameInput" list="nameList" placeholder="輸入或選擇姓名 / Type or choose a name" />
-          <datalist id="nameList"></datalist>
-        </div>
-        <div class="input-wrap">
-          <label>IG 帳號 / IG</label>
-          <input id="igInput" list="igList" placeholder="輸入或選擇 IG / Type or choose IG" />
-          <datalist id="igList"></datalist>
-        </div>
-        <div class="input-wrap"><button id="searchBtn" class="primary">搜尋 / Search</button></div>
-      </div>
-
-      <div id="bgPreview" class="preview" aria-label="invitation previews"></div>
-      <div id="head" class="result-head">開頁自動載入雲端名單；可輸入姓名或 IG 搜尋 / Auto-loading roster; search by name or IG</div>
-      <div id="grid" class="grid"></div>
-    </div>
-  </div>
-
-  <!-- 右下：單顆貓（上傳邀請函底圖） -->
-  <div class="cats" aria-label="hidden-controls">
-    <div id="btnUploadBG" class="cat-btn" title="上傳邀請函底圖 Upload invitation background">
-      <svg class="cat" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M6 8C6 5 7 3 9.5 4.5L12 6l2.5-1.5C17 3 18 5 18 8c2 1 3 3.5 3 6 0 4-3.5 8-9 8S3 18 3 14c0-2.5 1-5 3-6Z" />
-      </svg>
-    </div>
-  </div>
-
-  <!-- 隱藏 input（底圖） -->
-  <input id="fileBG" type="file" accept="image/*" style="display:none" multiple />
-
-  <!-- Confirm Modal -->
-  <div id="confirmBackdrop" class="backdrop">
-    <div class="modal">
-      <div class="title2">出席確認 / Attendance Confirmation</div>
-      <div class="rb"></div>
-      <div class="opts">
-        <div class="opt" data-val="confirmed">確認訂位，我會參加 | Confirm reservation</div>
-        <div class="opt" data-val="cancelled">抱歉，無法參加 | Sorry - cannot attend</div>
-      </div>
-      <div class="input-wrap"><label>備註 / Notes</label><textarea id="noteArea" placeholder="寫點想說的話 / Leave a note"></textarea></div>
-      <div class="actions">
-        <button id="confirmCancel" class="btn btn-line">取消 / Cancel</button>
-        <button id="confirmSubmit" class="btn btn-fill">送出 / Submit</button>
+        <button class="btn primary" id="doReplace" type="button">取代目前名單</button>
+        <button class="btn" id="doAppend" type="button">加到目前名單後面</button>
+        <button class="btn" id="doCancel" type="button">取消</button>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div id="toast" class="toast"></div>
+  <section class="sec">
+    <div class="row" style="justify-content:space-between">
+      <h3>目前名單 <span id="listCount" style="color:var(--muted);font-weight:500"></span></h3>
+      <div class="row">
+        <button class="btn" id="exportBtn" type="button">下載名單 CSV</button>
+        <button class="btn" id="exportWinBtn" type="button">下載得主 CSV</button>
+      </div>
+    </div>
+    <input type="search" id="search" placeholder="搜尋名字或 IG" aria-label="搜尋名單">
+    <div class="people"><table><thead><tr><th>編號</th><th>名字</th><th>IG</th><th></th></tr></thead><tbody id="peopleBody"></tbody></table></div>
+    <label class="check"><input type="checkbox" id="noRepeat" checked> 抽中的人不再重複抽</label>
+    <p>同一筆報名在表單裡出現幾行，就有幾次機會（例如同一人登記多位朋友）。名單會自動存在這台電腦的瀏覽器裡，重新整理不會不見。</p>
+    <span class="msg" id="listMsg"></span>
+  </section>
 
-  <!-- Libs -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <section class="sec">
+    <h3>轉盤選項</h3>
+    <p>每行一格：<code>中文 | English | 1</code>。最後的 <code>1</code> 代表要接著抽出一個人，<code>0</code> 代表不抽人（例如全場乾杯）。同一個選項寫兩行，出現機率就加倍。</p>
+    <textarea id="optsInput" spellcheck="false"></textarea>
+    <div class="row">
+      <button class="btn primary" id="saveOpts" type="button">套用轉盤選項</button>
+      <button class="btn" id="resetOpts" type="button">還原預設</button>
+      <span class="msg" id="optsMsg"></span>
+    </div>
+  </section>
+</aside>
 
-  <script>
-  /* ===================== Config ===================== */
-  const PASSWORD = '0714'; // 僅用於本地驗證上傳底圖（不顯示）
-  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzRDKWOg_mPJb092aYR-SSHMty8mF_zq_YoSjKknTz7_emDqLDjeDYWUgn7ewuDbnnq/exec';
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const COLORS=["#ff3b4f","#ff8a1f","#ffd23f","#2fd27a","#2f8cff","#a34dff","#ff8fc7","#6fd3ff","#ffffff","#7a4a2a"];
+const TEXT_ON={"#ffd23f":"#140b24","#2fd27a":"#140b24","#ff8fc7":"#140b24","#6fd3ff":"#140b24","#ffffff":"#140b24","#ff8a1f":"#140b24"};
+const DEFAULT_OPTS=`喝一杯 | Take a Shot! | 1
+幸運得主 | Lucky Winner | 1
+全場乾杯 | Everybody Cheers! | 0
+跳一段舞 | Dance It Out | 1
+幸運得主 | Lucky Winner | 1
+抱抱旁邊的人 | Hug Your Neighbor | 1
+再轉一次 | Spin Again | 0
+彩虹自拍 | Rainbow Selfie | 1
+喝一杯 | Take a Shot! | 1
+幸運得主 | Lucky Winner | 1`;
+const SAMPLE=[["小雨","rain_pride"],["Kevin","kevin.tw"],["阿翔","shiang_0831"],["Mia","mia.rainbow"],["小芊","chien_love"],["Jordan","jordan_tpe"],["阿凱","kai_runs"],["Yuki","yuki.dances"],["彥廷","yenting__"],["Sam","sam_is_here"],["佩佩","peipei.pp"],["Leo","leo_in_taipei"]];
 
+/* 報名名單：一行一人 [報名編號, 姓名, IG]。要改名單就改這裡。 */
+const LIST=[["TP070", "Sean", "seanliu829"], ["TP070", "Gerardo", "spacemanx2077"], ["TP006", "黃信瑋", "Newbearhere"], ["TP006", "蔡博任", "zhaochengen3241"], ["TP006", "楊嘉瑋", "yorkcubic"], ["TP009", "Dave Milford", "Seadave12"], ["TP009", "Orrin Brown", "seadakine808"], ["TP010", "kopan", "kopan_ex"], ["TP011", "David Hioe", "@gummycubbie"], ["TP012", "姜炳元", "@okaeri1911"], ["TP013", "Raymond Ballard", "@Plucka_1984"], ["TP013", "Viet Bui", "@Vbui92"], ["TP014", "Shotaro", "shotaro_13"], ["TP015", "Benson", "Beng2san4"], ["TP015", "Archer", "NA"], ["TP016", "Ma", "@unknownxguy"], ["TP016", "V", "2000"], ["TP016", "麵麵", "mianhuang"], ["TP017", "Brent Baculi", "@thebacooliest"], ["TP019", "丹尼", "@skyblue_danny"], ["TP019", "玖哲", "@gavinchen_tw"], ["TP019", "傑瑞", "@iamjerry.tw"], ["TP020", "Kyle Furuya", "@magu_magumaaaa"], ["TP020", "Jutton Robert", "@ messiaen333"], ["TP022", "Owen", "@owen_____huang"], ["TP023", "Leo Chen", "@leochen.07"], ["TP024", "Dae Young Kim", "navynl"], ["TP025", "Zak", "@6688kaz"], ["TP025", "Steven", "没有"], ["TP026", "Benny", "@bennycho7"], ["TP028", "Garry Moss", "@huggabearsg"], ["TP028", "Yew Eng Tee", "@ethillion"], ["TP029", "Hideaki", "@huskyhide0504"], ["TP030", "Harris", "@harris.nyc"], ["TP031", "Weson Wu", "Weson_Wu"], ["TP033", "Jayden", "j.dn___kr"], ["TP033", "Hiro", "Hiro85_kr"], ["TP033", "Logan", "Logan___kim___"], ["TP033", "QQ", "q__q94"], ["TP033", "Jun", "junstify"], ["TP034", "Randy", "@randyreborn13"], ["TP035", "Oscar", "@Cool_oscar"], ["TP036", "陳明彥", "@mingyeng1978"], ["TP037", "jaywong", "jaywong_1218"], ["TP038", "Gary Fong", "@garyfjt"], ["TP039", "Xiaobill", "@Xiaobill"], ["TP040", "Aw Teck Woon", "@dashyboy"], ["TP041", "碰碰", "PonPonYeh"], ["TP041", "開開", "rpenwow"], ["TP041", "船船", "nickhuang28"], ["TP042", "陳宇恆（阿亙）", "@hallo.quantum"], ["TP043", "Xintong Li", "xintong_li"], ["TP043", "王楠", "mrmetamorphosis"], ["TP043", "Kenny Tsai", "kennychiwa"], ["TP044", "黑糖", "@Siriuslee2002"], ["TP045", "小艾文", "@friendalvin_tw"], ["TP046", "David Cuajunco", "Ultraslowbro"], ["TP047", "Neil", "djneilzo"], ["TP048", "黃鈞鈞", "@chunnywalker"], ["TP050", "Adam", "ebear.hk"], ["TP051", "Kota", "@kohi78"], ["TP053", "Shayne Hsu", "shayno887"], ["TP053", "Fabio Cigana", "fabio.cigana"], ["TP054", "Jack van Remmen", "@brother_jack"], ["TP055", "Lim Boon Teck", "bryan_limbt"], ["TP055", "Randy Po", "randypolyanna"], ["TP055", "James Giannako", "James_13D"], ["TP055", "Arturo Cortes", "chilean_traveller"], ["TP055", "Rei Rei", "reikumarei"], ["TP055", "Sam Chan", "maullly"], ["TP055", "Tan Tong Wei (Luke)", "reinaku88"], ["TP056", "Hugo", "hugokotw"], ["TP056", "阿地", "dion_s_noid"], ["TP056", "Tama", "tamakingram0123"], ["TP056", "Tony", "hsun855"], ["TP057", "Marc Diocera", "@goodmarccc"], ["TP058", "Lawrence", "lawrencechi"], ["TP052", "Jared Hill", "Jaredh1ll"], ["TP060", "Anders", "andersgan"], ["TP060", "上野健一", "Buff3153"], ["TP061", "小宇19", "xyu70666"], ["TP062", "Zikai Meng", "@themonkeyraver"], ["TP062", "Bowen Shu", "bowatchshoe"], ["TP043", "柴柴", "chaichai_ezekiel"], ["TP063", "Nelson Lai", "menergy999"], ["TP063", "Mark Win", "m_aw_rk"], ["TP012", "林百八", "lin.yukai2820_tw"], ["TP012", "陳布魯", "blue760515"], ["TP064", "Rayo", "Wolfrayo"], ["TP064", "焦蕉", "Foritzbanana"], ["TP002", "Jin", "_jinzai_"], ["TP003", "Yusuke Hashizume", "@yhz.jp"], ["TP003", "Hiromasa Ando", "Ando.hiromasa"], ["TP004", "Titan0103", "Titan0103"], ["TP005", "Mitsuru", "mahmah9920"], ["TP005", "Hiroyuki", "hiro.yuki.3"], ["TP005", "Daisuke", "daisuke.0328"], ["TP005", "Kento", "kento_8969"], ["TP005", "Yu", "yuuuuu.__.u"], ["TP005", "Yuki", "dora_17972"], ["TP005", "Gyopi", "syy3068n"], ["TP005", "Yusaku", "39_3q"], ["912049596", "毛大", "amaoboss"], ["912049596", "Ryan", "mengmeng_0412"], ["TP007", "jason_xu", "jasonxutw"], ["TP007", "多多", "amis_zorn1995"], ["TP007", "Terry", "terryli0102"], ["TP007", "Yi Hsuan Cheng", "yhsmile79"], ["TP007", "亞倫", "aaronlee0330"], ["TP007", "任偉", "386cliff"], ["TP012", "大白", "konwe615"], ["TP058", "CHICHI", "lawrencechi"], ["TP058", "CHICHI", "lawrencechi"], ["TP058", "CHICHI", "lawrencechi"], ["TP058", "CHICHI", "lawrencechi"], ["TP058", "CHICHI", "lawrencechi"], ["TP058", "CHICHI", "lawrencechi"], ["TP058", "CHICHI", "lawrencechi"], ["TP058", "CHICHI", "lawrencechi"], ["TP058", "CHICHI", "lawrencechi"], ["TP007", "多濃", "dom_aqr"], ["TP008", "Yamashige", "yama_shige_"], ["TP008", "Shu", "s_h_u0723"], ["TP071", "John", "bonobook8"], ["TP071", "Ryan", "sillysquidninja"], ["TP012", "次次", "oozakiisaogmailcom"], ["TP089", "Ronald", "@ronaldau98"], ["TP089", "Nic leo", "nicholuffy"], ["TP090", "TJ", "@hdjoker7"], ["TP091", "Sean Wang", "sheepsheepking"], ["TP091", "陈可勋", "ko_hsun"], ["TP092", "Liu Sining", "@invisibles640"], ["TP092", "Tyler Ong", "tylerhappysglife"], ["TP093", "土屋伸一郎", "@shintaroo_taisa"], ["TP094", "박진서", "@jins_kr00"], ["TP094", "김태웅", "teddy90_kr"], ["TP095", "Will Chen", "@henryyehenry"], ["TP095", "Henry Yeh", "@henryyehenry"], ["TP097", "Victor小良", "Victor811118"], ["TP097", "Ollie歐里", "Victor811118"], ["TP098", "陳韋翰", "@hardywooolf"], ["TP098", "林禹丞", "@stevenlin149"], ["TP099", "Diogo Alcantara", "diogoalcan"], ["TP099", "Fabio Caracho Batista", "fabiocaracho"], ["TP100", "Shota lino", "@shota_tao"], ["TP100", "Go Matsumoto", "@go_go_ir"], ["TP102", "yuta", "@y_tr_9"], ["TP102", "youwen", "byyouwen"], ["TP103", "小軍", "@eric19791218"], ["TP103", "小派", "@patricliu_tw"], ["TP103", "Mingku(Eric)", "@ku_mingku"], ["TP103", "Dexter", "@dexterkim_kr"], ["TP104", "Zack Tseng", "@zacktseng"], ["TP104", "Kenneth Yu", "@kkyy425"], ["TP105", "King Leung", "Scruffy.Asian"], ["TP105", "Blue Sin", "bulublues"], ["TP106", "Taufik", "@taufikbm"], ["TP106", "Gandi", "@_aa_gandi"], ["TP106", "Reynald", "@rynldkrt"], ["TP107", "Jason Huang", "@hzkjason"], ["TP107", "ARiffin Hiew", "@riffinhiew"], ["TP108", "Henry", "henryng22"], ["TP109", "閉鼠幫", "@chenpuchou"], ["TP109", "小琦", "@petitechi520"], ["TP110", "Keisuke", "@keisukee.jp"], ["TP111", "AZUMA", "@benibenibayashi"], ["TP111", "SATO", "@k.sato.s"], ["TP111", "TOMO", "@niku_yasai"], ["TP111", "KEISUKE", "@keu_3s"], ["TP111", "MON", "@motoki_mon"], ["TP111", "TAKAHASHI", "@us_tsunobue"], ["TP112", "派特", "Paita8008"], ["TP112", "Open", "Open888820"], ["TP113", "Sheng Liu", "@ysliu16"], ["TP113", "Johnson", "@johnson_tangys"], ["TP114", "Ricky", "rickykun17"], ["TP114", "Shouko", "tony.owl"], ["TP114", "James", "James.kuen"], ["TP114", "First", "firsttimee"], ["TP050", "Frank", "stalkerforever6699"], ["TP050", "Bao", "breadwyc"], ["TP115", "Chamberlain Chang", "Creaayumi"], ["TP007", "Hank", "henrik.city"], ["TP007", "jim", "jimterk"], ["TP116", "Frederick Ee", "fredisadoctor"], ["TP116", "Matthew Lou", "Hunkywolf"], ["TP055", "Nolan Xu", "Nolanxjf"], ["TP055", "Nutty", "Ailuropoda_wk"], ["TP117", "Jacob", "Jacob_nammers"], ["TP118", "阿翰", "@scofie_chen"], ["TP119", "Nicholas Delgrego", "@nickmatized"], ["TP120", "Dennis Mendoza", "@dennistmp"], ["TP061", "小宇1", "xyu70666"], ["TP061", "小宇2", "xyu70666"], ["TP061", "小宇3", "xyu70666"], ["TP061", "小宇4", "xyu70666"], ["TP061", "小宇5", "xyu70666"], ["TP061", "小宇6", "xyu70666"], ["TP061", "小宇7", "xyu70666"], ["TP061", "小宇8", "xyu70666"], ["TP061", "小宇9", "xyu70666"], ["TP061", "小宇10", "xyu70666"], ["TP061", "小宇11", "xyu70666"], ["TP061", "小宇12", "xyu70666"], ["TP061", "小宇13", "xyu70666"], ["TP061", "小宇14", "xyu70666"], ["TP061", "小宇15", "xyu70666"], ["TP061", "小宇16", "xyu70666"], ["TP061", "小宇17", "xyu70666"], ["TP061", "小宇18", "xyu70666"], ["TP061", "小宇", "xyu70666"], ["TP061", "小宇20", "xyu70666"], ["TP061", "小宇21", "xyu70666"], ["TP121", "Moshin TAKAMATSU", "@moshin0527"], ["TP122", "Sai", "@saitokyosays"], ["TP123", "MAKOTO SASOH", "@makostagram.ig.jp"], ["TP123", "TAKAO SASOH", "@tetsutetsutestutestu"], ["TP123", "KAJIWARA KANAO", "@kanao_silver"], ["TP123", "SHOHEI HASHIMOTO", "@tanotter"], ["TP124", "FUI", "@tiger_and_dragon_88"], ["TP124", "Shogo", "@sho_gofk"], ["TP124", "Ryusei", "@ryu_seii14"], ["TP124", "HIROSHI", "@landmark_jpn"], ["TP124", "HIDEAKI", "@hideakih7"], ["TP124", "MINORU", "@misukejp"], ["TP125", "John", "@linjohn987"], ["TP125", "Daniel", "@beefybeartw"], ["TP126", "Ken liu", "Kenlovetravel"], ["TP126", "Tony yu", "Tonyyu0605"], ["TP007", "keeganfff", "阿根"], ["TP127", "李宗諭", "@aaronlee03308851"], ["TP128", "GoN", "@gon5n"], ["TP128", "Gold", "@goldstronghold"], ["TP128", "Yohei", "@midnitecruising"], ["TP128", "Satoshi", "@Sad_toshi"], ["TP128", "Junya", "@jun_yaaaaa"], ["TP129", "yuho", "tkmr_jp"], ["TP129", "wataru", "wataru_peso"], ["TP098", "鄭元嘉", "henry999111"], ["TP130", "Norman", "@normanyen"], ["TP130", "Pony", "Po_ny"], ["TP131", "JUNPEI", "@ziyun1992"], ["TP132", "Tagon", "@goongon27"], ["TP133", "Kukeu", "@kukeu997"], ["TP134", "blaine", "@61aine"], ["TP135", "Zay Latt", "just_zay_sf"], ["TP136", "阿徹", "acheache86"], ["TP136", "輒胖", "_._.zhepom._._"], ["TP136", "Timmy", "__timmys33187"], ["TP050", "Jason", "jaja_son94"], ["TP063", "Andre", "andre_ooyee"], ["TP137", "Chris Zhang", "@bordeauxbowtie"], ["TP138", "Kaptan Jungteerapanich", "@kaptajn"], ["TP137", "Keishi", "@g_ba_yo"], ["TP137", "Posho", "@posho_______"], ["TP137", "Ben", "@benny_and_theworld"], ["TP140", "Leo Chang", "@leocsscoel"], ["TP141", "Ryo(6)", "@kumoxkumo"], ["TP141", "DIN", "din.co.kr"], ["TP142", "屏", "siouxiyang"], ["TP143", "Gombo Chuluun", "gombo_12"], ["TP144", "Saru", "@jpsaru"], ["TP055", "Hao", "Frieren_hao0208"], ["TP145", "城城", "@f_ilbsine"], ["TP146", "Simon", "@Romeo.On.The.Rocks"], ["TP043", "超超", "booserboo"], ["TP147", "班尼", "Bennylu621229"], ["TP147", "小寶", "Tata0204"], ["TP148", "Daniel Jiang", "danieljiangishere"], ["TP148", "Daniel Simmons", "dannysimmons"], ["TP148", "Chin Tay", "chinttay"], ["TP149", "Alex Pryor", "@_pryorities"], ["TP150", "Hwaney", "@hwaney_hwan"], ["TP151", "June", "June_lai"], ["TP151", "Herry", "Herry G"], ["TP152", "Tony Nguyen", "tony_tiiger"], ["TP152", "Ausking shi", "Ausking"], ["TP153", "Leo", "One_punch_leo"], ["TP154", "子昊", "Zihowsong"], ["TP154", "小高", "Zihowsong"], ["TP154", "Hank", "Zihowsong"], ["TP154", "阿䀚", "Zihowsong"], ["TP154", "阿豪", "Zihowsong"], ["TP155", "Bogie", "@bogie_drj"], ["TP134", "allen", "allen.0729"], ["TP003", "Fumiya", "fumiyaaa86"], ["TP156", "Ken 廖", "@K3nith__"], ["TP156", "小虎", "無"], ["TP157", "Christopher Lowy", "@clowy01"], ["TP157", "Hu Hang", "foxhound430"], ["TP157", "Quoc Truong", "quoct91"], ["TP158", "白王", "@白王"], ["TP159", "Hui Zhao", "darrenzhaoau"], ["TP159", "Hayden Wang", "hayden_h_aus"], ["TP159", "Peter Wong", "ggwp.au"], ["TP159", "Michael Jansen", "mickj1969"], ["TP160", "陳家偉", "@philosophy26"], ["TP161", "Amber", "Amber_Liou"], ["TP162", "小夫", "@vanif"], ["TP163", "董佳豪", "@hwafrank"], ["TP164", "林洲宏", "@moumou_chou"], ["TP164", "顧書炫", "@shushuanku"], ["TP165", "Hanes Liu", "Henryliujjv"], ["TP166", "張惟鈞", "@johnsonmcqueen"], ["TP167", "小虎", "@tigerlee"], ["TP167", "阿信", "N"], ["TP167", "Eric 胖熊", "無"], ["TP167", "小賢", "無"], ["TP168", "Anh Truong", "@flynnrubberboy1"], ["TP169", "Kyle Waide Shoemaker", "kwshoe"], ["TP169", "Anthony", "anthonyip"], ["TP170", "Minki An", "@mkchiang_94"], ["TP170", "Suhwan Kim", "@sanxxhi"], ["TP170", "Sangmin Moon", "@mkchiang_94"], ["TP170", "Shinyik Yoo", "@mooniks14"], ["TP171", "Tyson Wang", "tyson.1119"], ["TP172", "Kun", "oohihilala"], ["TP173", "Zakk Roberts", "@midkay90"], ["TP174", "Peter (Zhe Wei) Zhang", "zhangermeister"], ["TP174", "Jorge Medina", "horchatawithboba"], ["TP175", "Takanori Kimura", "norinorio8o2"], ["TP176", "ryan_or_hiroshi", "ryan_or_hiroshi"], ["TP177", "Dorz Cheung", "Dorism"], ["TP177", "Mike", "mike_wonggggg"], ["TP177", "Stella", "stellayukisiu"], ["TP177", "Tim", "tim_psa_"], ["TP178", "Nick Chan", "@sunnsnnn"], ["TP179", "Hongseok lee", "Hanseo_199x"], ["TP179", "Dongju lee", "Seoulzzoo"], ["TP180", "Chok", "thanachok"], ["TP180", "Kazu", "sht_kazu"], ["TP181", "Justin Tien", "Justinean07"], ["TP181", "Johnny Nguyen", "Johnnynguyenesq"], ["TP181", "Lucas ong", "Lukas_korgi_bb"], ["TP043", "Benjamin Liang", "swyguh"], ["TP043", "Brian Navarro", "Bnavarro77"], ["TP182", "Dawson", "Liu_daws"], ["TP182", "鵬鵬", "https://www.instagram.com/_moon_moon_bird_?cplk=ajVzNjl3MzFpajIz"], ["TP182", "西瓜", "https://www.instagram.com/cjchen0225?rpxt=MW1tZnJpbWJjZWtieQ=="], ["TP182", "Brian", "https://www.instagram.com/kcpoe?vrfl=MWZlcnRteGFwNnVjZA=="], ["TP182", "Tiger", "https://www.instagram.com/tigervove?psln=MWw0OTB3eGlhMTB2bg=="], ["TP182", "Xiaoyu", "https://www.instagram.com/xyu70666?psln=MWhrandwbm4wZXd4Yg=="], ["TP182", "Hydo", "https://www.instagram.com/hydo_8898?mdxt=czM1azl6dGE5Z2Z6"], ["TP183", "許小寶", "@sam_hsu0507"], ["TP183", "熊寶", "@linxiongbaobao"], ["TP183", "Kyle", "@earchiu"], ["TP182", "阿生", "https://www.instagram.com/jsheng_322?obrf=MW11MnBjYWlyeHp6MA=="], ["TP159", "Rui Yuan Chen", "yuanyuan851116"], ["TP184", "Mike", "@mikey__travels"], ["TP184", "Mark", "@dryad3333"], ["TP184", "Ken", "@super_kenkenken"], ["TP185", "詹耀德", "@iamryanzhan"], ["TP186", "Jon Tsung", "@jonorjh"], ["TP186", "Alan Chien", "hl_chien"], ["TP045", "品智", "pin_zhi_76"], ["TP187", "Francesc Caballero", "@physikero"], ["TP187", "Daniel Ferreira", "@dnfrb"], ["TP188", "洪昇鋒", "whoomark"], ["TP189", "Ryan Wu", "@Ryanwu.86"], ["TP190", "外山雄太", "@yu___tt00"], ["TP191", "Stamina Kim", "@stamina_gay_travel"], ["TP145", "阿碩", "@zonapha"], ["TP192", "Travis Tang", "i8_tartare"], ["TP111", "HSUN", "@hsun_tw_986"], ["TP137", "Jason", "Jason2.18"], ["TP193", "Johnny Pham", "Johnpham"], ["TP194", "Taka", "https://www.instagram.com/09652_?vrfl=cXhjbzRieWVmbDZh"], ["TP177", "Kenny", "kennyhk28"], ["TP195", "Alfred Cheung", "alfredstravelworld"], ["TP195", "Roger", "zyhroger"], ["TP154", "ryan", "ryan"], ["TP154", "Vanness", "Vanness"]];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
-  /* ===================== State ===================== */
-  const state = {
-    rows: [],
-    bgImages: [],
-    selected: null,
-    confirmChoice: null,
-  };
+let people=[], pool=[], winners=[], opts=[], isSample=false, pending=null, lastAddedId=null;
+let rotation=0, spinning=false, sound=store.get("pd_sound","1")==="1";
 
-  /* ===================== Utils ===================== */
-  const $ = (id)=>document.getElementById(id);
-  const norm = (s)=> (s||'').toString().trim().toLowerCase();
-  const unique = (arr)=>[...new Set(arr)];
-  const showToast = (msg)=>{ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1600); };
+/* ---------- parsing ---------- */
+function cleanIg(v){
+  let s=String(v==null?"":v).trim();
+  if(/^(無|没有|沒有|none|n\/a|na|-|—|x)$/i.test(s)) return "";
+  s=s.replace(/^https?:\/\/(www\.)?instagram\.com\//i,"").replace(/[\/?#].*$/,"").replace(/^@+/,"").trim();
+  return s;
+}
+function person(name,ig,no){return {id:uid(),name:String(name).trim(),ig:cleanIg(ig),no:no==null?"":String(no).trim()}}
 
-  /* ===================== Load roster from GAS ===================== */
-  async function loadRoster(){
-    try{
-      const res = await fetch(WEB_APP_URL + '?mode=roster', {method:'GET', mode:'cors', cache:'no-store'});
-      const j = await res.json();
-      const rows = Array.isArray(j.rows) ? j.rows : (Array.isArray(j) ? j : []);
-      state.rows = rows.map(r=>({
-        item: r.item||'',
-        number: (r.number||'').toString(),
-        country: r.country||'',
-        flag: r.flag||'',
-        name: r.name||'',
-        ig: r.ig||'',
-        leader: r.leader||'',
-        link: r.link||'',
-        status: r.status||'',
-        qrcode: r.qrcode||'',
-        notes: r.notes||''
-      }));
-      rebuildDatalists();
-      $('head').textContent = `名單已載入，共 ${state.rows.length} 筆 / Roster loaded (${state.rows.length})`;
-    }catch(e){
-      console.error(e); showToast('載入名單失敗 / Failed to load roster');
-    }
-  }
-
-  function rebuildDatalists(){
-    const dlN = $('nameList'); const dlI = $('igList');
-    dlN.innerHTML = ''; dlI.innerHTML = '';
-    unique(state.rows.map(r=>r.name).filter(Boolean).sort((a,b)=>a.localeCompare(b,'zh-Hant'))).forEach(v=>{
-      const o=document.createElement('option'); o.value=v; dlN.appendChild(o);
-    });
-    unique(state.rows.map(r=>r.ig).filter(Boolean).sort()).forEach(v=>{
-      const o=document.createElement('option'); o.value=v; dlI.appendChild(o);
-    });
-  }
-
-  /* ===================== BG upload (password prompt, not shown anywhere) ===================== */
-  $('btnUploadBG').addEventListener('click', ()=>{
-    const p = prompt('請輸入密碼 / Enter password'); if(p!==PASSWORD){ if(p!==null) showToast('密碼錯誤 / Wrong password'); return; }
-    $('fileBG').click();
+function fromRows(rows){ // rows: array of arrays
+  rows=rows.filter(r=>r&&r.some(c=>c!=null&&String(c).trim()!==""));
+  if(!rows.length) return {list:[],skipped:0};
+  const h=rows[0].map(c=>String(c==null?"":c).trim());
+  const find=(...res)=>{for(const re of res){const i=h.findIndex(x=>re.test(x));if(i>=0)return i}return -1};
+  let iName=find(/^(姓名|名字|名稱|暱稱|name|nickname)$/i,/姓名|名字|name/i);
+  let iIg=find(/ig.*(帳號|account|id|handle)|instagram/i,/^ig$/i);
+  let iNo=find(/報名編號|編號|^no\.?$|^id$/i);
+  let iSt=find(/狀態|status/i);
+  let body=rows;
+  if(iName>=0){body=rows.slice(1)} else {iName=0;iIg=1;iNo=-1;iSt=-1}
+  let skipped=0; const list=[];
+  body.forEach(r=>{
+    const name=r[iName]; if(name==null||!String(name).trim()) return;
+    if(iSt>=0 && /取消|cancel|退出|不參加/i.test(String(r[iSt]||""))){skipped++;return}
+    list.push(person(name, iIg>=0?r[iIg]:"", iNo>=0?r[iNo]:""));
   });
-  $('fileBG').addEventListener('change', async (e)=>{
-    const files = Array.from(e.target.files||[]); if(!files.length) return;
-    state.bgImages = [];
-    for(const f of files){ const img = await fileToImage(f); state.bgImages.push(img); }
-    renderBGPreview(); showToast('邀請函底圖已載入 / Backgrounds loaded'); e.target.value='';
+  return {list,skipped};
+}
+function fromText(text){
+  const rows=text.split(/\r?\n/).map(l=>l.split(/\t|,|，/).map(s=>s.trim().replace(/^"|"$/g,"")));
+  return fromRows(rows);
+}
+function parseOpts(text){
+  const o=[];
+  text.split(/\r?\n/).forEach(l=>{l=l.trim();if(!l)return;const p=l.split("|").map(s=>s.trim());o.push({zh:p[0]||"?",en:p[1]||"",pick:(p[2]||"1")!=="0"})});
+  return o.length>=2?o:parseOpts(DEFAULT_OPTS);
+}
+
+/* ---------- state ---------- */
+function save(){store.set("pd2_people",JSON.stringify(people));store.set("pd2_winners",JSON.stringify(winners));store.set("pd2_sample",isSample?"1":"0")}
+function load(){
+  let saved=null; try{saved=JSON.parse(store.get("pd2_people","null"))}catch(e){}
+  try{winners=JSON.parse(store.get("pd2_winners","[]"))||[]}catch(e){winners=[]}
+  if(Array.isArray(saved)){people=saved;isSample=store.get("pd2_sample","0")==="1"}
+  else if(LIST.length){people=LIST.map(([no,n,i])=>person(n,i,no));isSample=false;save()}
+  else {people=SAMPLE.map(([n,i])=>person(n,i,"範例"));isSample=true}
+  $("#optsInput").value=store.get("pd_opts",DEFAULT_OPTS);
+  opts=parseOpts($("#optsInput").value);
+  $("#noRepeat").checked=store.get("pd_norep","1")==="1";
+  $("#soundBtn").textContent="音效 "+(sound?"開":"關");$("#soundBtn").setAttribute("aria-pressed",sound);
+  refresh(); drawWheel();
+}
+function wonIds(){return new Set(winners.map(w=>w.id))}
+function refresh(){
+  const won=wonIds();
+  pool=$("#noRepeat").checked?people.filter(p=>!won.has(p.id)):people.slice();
+  $("#sTotal").textContent=people.length;$("#sLeft").textContent=pool.length;$("#sDone").textContent=winners.length;
+  $("#hubCount").textContent=pool.length+" 人";$("#sampleTag").hidden=!isSample;
+  renderWinners(); renderPeople();
+}
+function renderWinners(){
+  const ol=$("#winList");ol.innerHTML="";
+  winners.slice().reverse().forEach(w=>{
+    const li=document.createElement("li");
+    li.append(document.createTextNode(w.name+" "));
+    if(w.ig){const s=document.createElement("span");s.className="ig";s.textContent="@"+w.ig;li.append(s,document.createTextNode(" "))}
+    const t=document.createElement("span");t.textContent="· "+w.task;li.append(t);ol.append(li);
   });
-  function fileToImage(file){
-    return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>res(img); img.onerror=rej; img.src=URL.createObjectURL(file); });
+  ol.reversed=true;ol.start=winners.length;$("#winEmpty").hidden=winners.length>0;
+}
+function renderPeople(){
+  if($("#drawer").hidden) return;
+  const q=$("#search").value.trim().toLowerCase(), won=wonIds(), tb=$("#peopleBody");
+  tb.innerHTML="";
+  const list=q?people.filter(p=>(p.name+" "+p.ig+" "+p.no).toLowerCase().includes(q)):people;
+  $("#listCount").textContent=`（${people.length} 人${q?`，符合 ${list.length}`:""}）`;
+  const frag=document.createDocumentFragment();
+  list.forEach(p=>{
+    const tr=document.createElement("tr"); if(won.has(p.id))tr.className="won"; if(p.id===lastAddedId)tr.classList.add("new");
+    const a=document.createElement("td");a.className="no";a.textContent=p.no;
+    const b=document.createElement("td");b.textContent=p.name;
+    if(p.id===lastAddedId){const c=document.createElement("span");c.className="chip";c.textContent="新";b.append(c)}
+    if(won.has(p.id)){const c=document.createElement("span");c.className="chip won";c.textContent="已抽中";b.append(c)}
+    const c=document.createElement("td");c.className="ig";c.textContent=p.ig?"@"+p.ig:"";
+    const d=document.createElement("td");const x=document.createElement("button");x.type="button";x.className="x";x.textContent="刪除";x.dataset.id=p.id;d.append(x);
+    tr.append(a,b,c,d);frag.append(tr);
+  });
+  tb.append(frag);
+}
+$("#peopleBody").addEventListener("click",e=>{
+  const x=e.target.closest(".x");if(!x)return;
+  if(!x.classList.contains("armed")){x.classList.add("armed");x.textContent="確定？";setTimeout(()=>{if(x.isConnected){x.classList.remove("armed");x.textContent="刪除"}},2500);return}
+  const p=people.find(p=>p.id===x.dataset.id);
+  people=people.filter(p=>p.id!==x.dataset.id);save();refresh();
+  $("#listMsg").textContent=p?`已刪除 ${p.name}`:"";
+});
+$("#search").addEventListener("input",renderPeople);
+
+/* ---------- built-in list ---------- */
+let reloadArm=false;
+$("#reloadEmbed").onclick=e=>{
+  if(!reloadArm){reloadArm=true;e.target.textContent="確定？會清除抽中紀錄與臨時加的人";setTimeout(()=>{reloadArm=false;e.target.textContent="重新載入內建報名名單"},3000);return}
+  reloadArm=false;e.target.textContent="重新載入內建報名名單";
+  people=LIST.map(([no,n,i])=>person(n,i,no));winners=[];isSample=false;lastAddedId=null;save();refresh();
+  $("#listMsg").textContent=`已載入內建名單 ${people.length} 人`;
+};
+$("#reloadEmbed").hidden=!LIST.length;
+
+/* ---------- add one ---------- */
+$("#addForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const n=$("#addName").value.trim(); if(!n){$("#addMsg").style.color="var(--yellow)";$("#addMsg").textContent="請先填名字";$("#addName").focus();return}
+  if(isSample){people=[];isSample=false}
+  const p=person(n,$("#addIg").value,"現場");
+  const dup=people.some(q=>q.ig&&p.ig&&q.ig.toLowerCase()===p.ig.toLowerCase());
+  people.push(p);lastAddedId=p.id;save();refresh();
+  $("#addMsg").style.color=dup?"var(--yellow)":"var(--green)";
+  $("#addMsg").textContent=`已加入 ${p.name}${p.ig?" @"+p.ig:""}，目前共 ${people.length} 人`+(dup?"（提醒：名單裡已有同一個 IG）":"");
+  $("#addName").value="";$("#addIg").value="";$("#addName").focus();
+});
+
+/* ---------- import ---------- */
+function showPreview(res,src){
+  pending=res.list;
+  $("#preview").hidden=false;
+  $("#previewText").innerHTML="";
+  const t=document.createElement("span");
+  t.append(`從 ${src} 讀到 `);const b=document.createElement("b");b.textContent=res.list.length+" 人";t.append(b);
+  if(res.skipped)t.append(`，略過 ${res.skipped} 筆已取消`);
+  if(res.list.length){t.append(`。第一位：${res.list[0].name}${res.list[0].ig?" @"+res.list[0].ig:""}`)}
+  $("#previewText").append(t);
+  const noIg=res.list.filter(p=>!p.ig).length;
+  const c={};res.list.forEach(p=>{if(p.ig){const k=p.ig.toLowerCase();c[k]=(c[k]||0)+1}});
+  const multi=Object.entries(c).filter(([k,v])=>v>1).sort((a,b)=>b[1]-a[1]);
+  const w=[];
+  if(noIg)w.push(`${noIg} 人沒有 IG（抽中時只顯示名字）`);
+  if(multi.length)w.push(`有 ${multi.length} 個 IG 出現在多行，例如 `+multi.slice(0,3).map(([k,v])=>`@${k} ×${v}`).join("、")+`。每一行都算一次機會`);
+  $("#previewWarn").textContent=w.join("；");
+  $("#doReplace").disabled=$("#doAppend").disabled=!res.list.length;
+}
+$("#fileInput").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  if(/\.(xlsx|xls)$/i.test(f.name)){
+    r.onload=()=>{try{
+      if(typeof XLSX==="undefined") throw new Error("nolib");
+      const wb=XLSX.read(new Uint8Array(r.result),{type:"array"});
+      showPreview(fromRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,blankrows:false,defval:""})),f.name);
+    }catch(err){$("#preview").hidden=false;pending=null;$("#previewText").textContent=err.message==="nolib"?"Excel 讀取元件沒有載入（可能沒網路）。請在 Excel 另存成 CSV 再上傳，或直接複製兩欄貼上。":"讀不到這個 Excel，請另存成 CSV 再上傳。";$("#previewWarn").textContent="";$("#doReplace").disabled=$("#doAppend").disabled=true}};
+    r.readAsArrayBuffer(f);
+  } else {r.onload=()=>showPreview(fromText(String(r.result).replace(/^﻿/,"")),f.name);r.readAsText(f)}
+  e.target.value="";
+};
+$("#pasteBtn").onclick=()=>{const v=$("#pasteInput").value;if(v.trim())showPreview(fromText(v),"貼上的內容")};
+$("#doReplace").onclick=()=>{
+  if(!pending)return;people=pending;winners=[];isSample=false;lastAddedId=null;finishImport(`已換成新名單：${people.length} 人，抽中紀錄已歸零`)};
+$("#doAppend").onclick=()=>{
+  if(!pending)return;if(isSample){people=[];isSample=false}people=people.concat(pending);finishImport(`已加入 ${pending.length} 人，目前共 ${people.length} 人`)};
+$("#doCancel").onclick=()=>{pending=null;$("#preview").hidden=true};
+function finishImport(msg){pending=null;$("#preview").hidden=true;$("#pasteInput").value="";save();refresh();$("#listMsg").textContent=msg}
+
+/* ---------- export ---------- */
+function csvCell(v){v=String(v==null?"":v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+function download(name,rows){
+  const text="﻿"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+  try{
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"text/csv;charset=utf-8"}));a.download=name;document.body.append(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+    $("#listMsg").textContent=`已下載 ${name}（若沒反應，代表目前環境不允許下載，請用 GitHub Pages 網址開啟）`;
+  }catch(e){$("#listMsg").textContent="這個環境不允許下載檔案。"}
+}
+const stamp=()=>new Date().toISOString().slice(0,10);
+$("#exportBtn").onclick=()=>download(`名單_${stamp()}.csv`,[["報名編號","姓名","IG帳號"],...people.map(p=>[p.no,p.name,p.ig])]);
+$("#exportWinBtn").onclick=()=>download(`得主_${stamp()}.csv`,[["順序","報名編號","姓名","IG帳號","任務","時間"],...winners.map((w,i)=>[i+1,w.no,w.name,w.ig,w.task,new Date(w.t).toLocaleString("zh-TW")])]);
+
+/* ---------- wheel ---------- */
+const cv=$("#wheel"),ctx=cv.getContext("2d");
+function sizeWheel(){const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);const s=Math.round(r.width*dpr);if(s>0&&cv.width!==s){cv.width=s;cv.height=s}drawWheel()}
+function drawWheel(){
+  const S=cv.width,c=S/2,R=c*0.96,n=opts.length,seg=2*Math.PI/n;
+  ctx.clearRect(0,0,S,S);ctx.save();ctx.translate(c,c);ctx.rotate(rotation);
+  ctx.beginPath();ctx.arc(0,0,R+S*0.02,0,2*Math.PI);ctx.fillStyle="#fff7ea";ctx.fill();
+  for(let i=0;i<n;i++){
+    const a0=-Math.PI/2+i*seg-seg/2,col=COLORS[i%COLORS.length];
+    ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a0+seg);ctx.closePath();
+    ctx.fillStyle=col;ctx.fill();ctx.lineWidth=S*0.006;ctx.strokeStyle="#140b24";ctx.stroke();
+    ctx.save();ctx.rotate(a0+seg/2);ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillStyle=TEXT_ON[col]||"#fff7ea";
+    const fz=Math.max(10,Math.min(S*0.05,S*0.32/Math.max(3,opts[i].zh.length)));
+    ctx.font=`900 ${fz}px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;ctx.fillText(opts[i].zh,R*0.9,-fz*0.32);
+    ctx.font=`400 ${Math.max(8,fz*0.5)}px "Bungee",sans-serif`;ctx.globalAlpha=.85;ctx.fillText(opts[i].en.toUpperCase(),R*0.9,fz*0.55);
+    ctx.restore();
   }
-  function renderBGPreview(){
-    const box=$('bgPreview'); box.innerHTML='';
-    state.bgImages.forEach(img=>{ const el=document.createElement('img'); el.src=img.src; box.appendChild(el);});
-  }
+  for(let i=0;i<n*3;i++){const a=i*2*Math.PI/(n*3);ctx.beginPath();ctx.arc(Math.cos(a)*(R+S*0.01),Math.sin(a)*(R+S*0.01),S*0.007,0,2*Math.PI);ctx.fillStyle=i%2?"#ffd23f":"#ff3b4f";ctx.fill()}
+  ctx.restore();
+}
+function indexAtPointer(rot){const n=opts.length,seg=2*Math.PI/n;const a=((-rot)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);return Math.round(a/seg)%n}
 
-  /* ===================== Search ===================== */
-  $('searchBtn').addEventListener('click', search);
-  $('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter') search();});
-  $('igInput').addEventListener('keydown',e=>{if(e.key==='Enter') search();});
+/* ---------- audio ---------- */
+let ac=null;
+function beep(f,d,type="square",vol=.05){if(!sound)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(vol,ac.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function fanfare(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.25,"triangle",.08),i*110))}
+function rnd(n){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n}
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function search(){
-    const qn = norm($('nameInput').value), qi = norm($('igInput').value);
-    if(!state.rows.length){ showToast('名單尚未載入 / Roster not loaded'); return; }
-    let sel = null;
-    if(qi) sel = state.rows.find(r=>norm(r.ig)===qi);
-    if(!sel && qn) sel = state.rows.find(r=>norm(r.name)===qn);
-
-    let rows=[]; let leader='';
-    if(sel){ leader = sel.leader; rows = state.rows.filter(r=>norm(r.leader)===norm(leader)); }
+/* ---------- spin ---------- */
+function spin(){
+  if(spinning)return;
+  if(opts.some(o=>o.pick)&&pool.length===0){setResult("名單抽完了","Everyone's been drawn","請到「名單 / 設定」加人，或清除抽中紀錄。");return}
+  spinning=true;$("#spinBtn").disabled=true;
+  setResult("轉轉轉…","Spinning…","");$("#resLabel").textContent="輪盤轉動中 / Spinning";
+  const n=opts.length,seg=2*Math.PI/n,target=rnd(n),jitter=(Math.random()-.5)*seg*0.7,start=rotation;
+  const want=-(target*seg)+jitter, turns=6+rnd(3);
+  const end=start+(((want-start)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)+turns*2*Math.PI;
+  const dur=reduce?600:5200+rnd(1200),t0=performance.now();let lastIdx=indexAtPointer(start+seg/2);
+  const ease=t=>1-Math.pow(1-t,4);
+  (function frame(now){
+    now=now||performance.now();const t=Math.min(1,(now-t0)/dur);rotation=start+(end-start)*ease(t);drawWheel();
+    const idx=indexAtPointer(rotation+seg/2);
+    if(idx!==lastIdx){lastIdx=idx;beep(900,.03,"square",.03);const p=$("#pointer");p.classList.remove("tick");void p.offsetWidth;p.classList.add("tick")}
+    if(t<1)requestAnimationFrame(frame);else landed(indexAtPointer(rotation));
+  })();
+}
+function setResult(zh,en,hint){$("#taskZh").textContent=zh;$("#taskEn").textContent=en;$("#whoHint").textContent=hint;$("#whoHint").hidden=!hint;$("#whoName").textContent="";$("#whoIg").textContent="";$("#whoNo").textContent="";$("#who").className="who"}
+function landed(i){
+  const o=opts[i];$("#resLabel").textContent="轉到了 / The wheel says";$("#taskZh").textContent=o.zh;$("#taskEn").textContent=o.en;beep(1200,.15,"triangle",.07);
+  if(!o.pick){$("#whoHint").hidden=false;$("#whoHint").textContent=/再轉/.test(o.zh)?"這次不算！再按一次「轉！」":"全場一起來！這輪不抽人，再按一次「轉！」";burst(80);done();return}
+  $("#whoHint").hidden=true;setTimeout(()=>rollName(o),reduce?100:700);
+}
+function rollName(o){
+  const who=$("#who");who.className="who rolling";
+  const winner=pool[rnd(pool.length)];let delay=45,total=0;const maxT=reduce?200:3000;
+  (function step(){
+    const p=pool[rnd(pool.length)];$("#whoName").textContent=p.name;$("#whoIg").textContent=p.ig?"@"+p.ig:"";
+    beep(500+rnd(400),.02,"sine",.03);total+=delay;delay*=1.09;
+    if(total<maxT)setTimeout(step,delay);
     else{
-      const cand = state.rows.filter(r=> (qi && norm(r.ig).includes(qi)) || (qn && norm(r.name).includes(qn)) );
-      if(cand.length){ leader = cand[0].leader; rows = state.rows.filter(r=>norm(r.leader)===norm(leader)); }
+      $("#whoName").textContent=winner.name;$("#whoIg").textContent=winner.ig?"@"+winner.ig:"";
+      $("#whoNo").textContent=winner.no&&winner.no!=="範例"?(winner.no==="現場"?"現場加入":"報名編號 "+winner.no):"";
+      who.className="who done";
+      winners.push({id:winner.id,no:winner.no,name:winner.name,ig:winner.ig,task:o.zh,t:Date.now()});
+      save();refresh();fanfare();burst(220);done();
     }
-    renderList(rows, leader);
-  }
+  })();
+}
+function done(){spinning=false;$("#spinBtn").disabled=false}
 
-  /* ===================== Render ===================== */
-  function renderList(rows, leader){
-    const grid = $('grid'); grid.innerHTML='';
-    if(!rows || !rows.length){ $('head').textContent='查無資料 / No results'; return; }
-    $('head').innerHTML = leader ? `桌長 / Leader：<b>${leader||'—'}</b>（${rows.length} 筆 / records）` : `共 ${rows.length} 筆 / records`;
+/* ---------- confetti ---------- */
+const cf=$("#confetti"),cx=cf.getContext("2d");let bits=[],cfRun=false;
+function burst(count){if(reduce)return;cf.width=innerWidth;cf.height=innerHeight;
+  for(let i=0;i<count;i++)bits.push({x:innerWidth/2+(Math.random()-.5)*innerWidth*.4,y:innerHeight*.35,vx:(Math.random()-.5)*16,vy:-Math.random()*16-4,r:4+Math.random()*6,c:COLORS[rnd(8)],a:Math.random()*6,va:(Math.random()-.5)*.4,life:0});
+  if(!cfRun){cfRun=true;requestAnimationFrame(cfFrame)}}
+function cfFrame(){cx.clearRect(0,0,cf.width,cf.height);
+  bits.forEach(b=>{b.vy+=.35;b.vx*=.99;b.x+=b.vx;b.y+=b.vy;b.a+=b.va;b.life++;cx.save();cx.translate(b.x,b.y);cx.rotate(b.a);cx.fillStyle=b.c;cx.fillRect(-b.r,-b.r/2,b.r*2,b.r);cx.restore()});
+  bits=bits.filter(b=>b.y<cf.height+40&&b.life<400);if(bits.length)requestAnimationFrame(cfFrame);else{cfRun=false;cx.clearRect(0,0,cf.width,cf.height)}}
 
-    rows.sort((a,b)=> (a.country||'').localeCompare(b.country||'','zh-Hant') || (a.name||'').localeCompare(b.name||'','zh-Hant'));
-    for(const r of rows){ grid.appendChild(renderPerson(r)); }
-  }
-
-  function renderPerson(r){
-    const card = document.createElement('div'); card.className='person';
-
-    // 第一行：旗｜國家｜NAME｜IG
-    const L1 = document.createElement('div'); L1.className='row1';
-    const flag = document.createElement('div'); flag.className='flag cell'; flag.textContent = r.flag || '—';
-
-    const ctryBox = document.createElement('div'); ctryBox.className='cell';
-    ctryBox.innerHTML = `<div class="label">國家 / Country</div><div class="val">${r.country||'—'}</div>`;
-
-    const nameBox = document.createElement('div'); nameBox.className='cell';
-    nameBox.innerHTML = `<div class="label">姓名 / Name</div><div class="val name-val">${r.name||'—'}</div>`;
-
-    const igBox = document.createElement('div'); igBox.className='cell';
-    igBox.innerHTML = `<div class="label">IG</div><div class="val ig">${r.ig||'—'}</div>`;
-
-    L1.append(flag, ctryBox, nameBox, igBox);
-
-    // 第二行（左狀態）＋右連結（有才顯示）
-    const L2 = document.createElement('div'); L2.className='line';
-    const left2 = document.createElement('div'); left2.className='left'; left2.append(buildStatus(r.status));
-    const right2 = document.createElement('div'); right2.className='right';
-    if(r.link){
-      const a=document.createElement('a');
-      a.href=r.link; a.target='_blank'; a.rel='noopener noreferrer'; a.className='link-btn'; a.textContent='開啟連結 / Open link';
-      right2.appendChild(a);
-    }
-    L2.append(left2,right2);
-
-    // 第三行：Confirm + 下載邀請函
-    const L3 = document.createElement('div'); L3.className='actions';
-    const btnC = document.createElement('button'); btnC.className='btn'; btnC.textContent='確認 / Confirm';
-    btnC.addEventListener('click',()=> openConfirm(r));
-    const btnD = document.createElement('button'); btnD.className='btn'; btnD.textContent='邀請函下載 / Download Invite';
-    btnD.addEventListener('click',()=> downloadInvite(r));
-    L3.append(btnC, btnD);
-
-    card.append(L1,L2,L3);
-    return card;
-  }
-
-  function buildStatus(status){
-    const box=document.createElement('div'); box.className='status';
-    const s = norm(status);
-    let type='warn', label='未回覆 / Pending', icon='?';
-    if(s==='confirmed'){ type='ok'; label='已確定訂位 / Confirmed'; icon='✔'; }
-    else if(s==='cancelled'){ type='bad'; label='取消參加 / Cancelled'; icon='✕'; }
-    const badge=document.createElement('div'); badge.className='badge '+type; badge.innerHTML = svgIcon(icon);
-    const lab=document.createElement('div'); lab.className='status-label'; lab.textContent=label;
-    box.append(badge,lab); return box;
-  }
-  function svgIcon(char){
-    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><text x="12" y="16" text-anchor="middle" font-size="14" font-family="ui-sans-serif, system-ui">${char}</text></svg>`;
-  }
-
-  /* ===================== Confirm Modal & Submit ===================== */
-  const modal=$('confirmBackdrop'); const noteArea=$('noteArea'); const btnSubmit=$('confirmSubmit');
-  document.querySelectorAll('.opt').forEach(el=> el.addEventListener('click',()=> selectOpt(el)) );
-  $('confirmCancel').addEventListener('click', ()=> closeModal());
-
-  function openConfirm(person){
-    state.selected = person; state.confirmChoice = null; noteArea.value='';
-    document.querySelectorAll('.opt').forEach(o=>o.classList.remove('active'));
-    modal.style.display='flex';
-  }
-  function selectOpt(el){
-    document.querySelectorAll('.opt').forEach(o=>o.classList.remove('active'));
-    el.classList.add('active'); state.confirmChoice = el.dataset.val;
-  }
-  function closeModal(){ modal.style.display='none'; }
-
-  btnSubmit.addEventListener('click', async ()=>{
-    if(!state.confirmChoice){ showToast('請選擇一個選項 / Please choose an option'); return; }
-    const person = state.selected; if(!person){ closeModal(); return; }
-    const payloadAction = {
-      action: 'updateStatus',
-      name: person.name,
-      ig: person.ig || '',
-      status: state.confirmChoice,
-      notes: noteArea.value.trim()
-    };
-    const payloadLegacy = { // 後端若採舊版亦可吃
-      item:person.item, number:person.number, country:person.country, flag:person.flag,
-      name:person.name, ig:person.ig, leader:person.leader, link:person.link,
-      status:state.confirmChoice, note: noteArea.value.trim(), ts: Date.now()
-    };
-
-    btnSubmit.disabled=true; btnSubmit.textContent='傳送中… / Sending…';
-    try{
-      let ok = await postJson(WEB_APP_URL, payloadAction);
-      if(!ok){ ok = await postJson(WEB_APP_URL, payloadLegacy); }
-      if(!ok) throw new Error('SERVER_NOK');
-
-      person.status = state.confirmChoice; // 即時更新
-      showToast('已送出並更新狀態 / Submitted & updated');
-      closeModal();
-      search();
-    }catch(err){
-      console.error(err);
-      showToast('送出失敗 / Submit failed');
-    }finally{ btnSubmit.disabled=false; btnSubmit.textContent='送出 / Submit'; }
-  });
-
-  async function postJson(url, body){
-    try{
-      const res = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(body), mode:'cors', cache:'no-store' });
-      let j=null; try{ j=await res.json(); }catch{}
-      if(j && (j.ok===true || j.status==='ok')) return true;
-      if(!j && res.ok) return true;
-      return false;
-    }catch{return false}
-  }
-
-  /* ===================== Invitation: draw & download (金色文字 + QR) ===================== */
-  async function downloadInvite(person){
-    if(!state.bgImages.length){ showToast('請先上傳邀請函底圖 / Upload background first'); return; }
-    const img = state.bgImages[0];
-    const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-    const W = img.naturalWidth, H = img.naturalHeight; canvas.width=W; canvas.height=H;
-    ctx.drawImage(img,0,0,W,H);
-
-    const text = `${person.item||''}-${person.number||''}`.trim();
-    const isH = W>=H;
-    let box; if(isH){
-      // 橫式：右下 35%×18%
-      box = { x: 0.60*W, y: 0.70*H, w: 0.35*W, h: 0.18*H };
-    }else{
-      // 直式：中下 70%×16%
-      box = { x: 0.15*W, y: 0.60*H, w: 0.70*W, h: 0.16*H };
-    }
-
-    // 自動縮放字體，金色＋黑描邊
-    const fontFamily = '"Yu Gothic UI Light","Noto Serif HK Black","Noto Sans TC","Microsoft JhengHei",ui-sans-serif,system-ui';
-    let fontSize = Math.min(box.h*0.55, box.w*0.22);
-    ctx.textBaseline='middle'; ctx.textAlign='center';
-    while(fontSize>10){
-      ctx.font = `900 ${fontSize}px ${fontFamily}`;
-      const w = ctx.measureText(text).width;
-      if(w<=box.w) break;
-      fontSize -= 1;
-    }
-    const cx = box.x + box.w/2, cy = box.y + box.h*0.45;
-
-    // 金色漸層
-    const grad = ctx.createLinearGradient(box.x, cy - fontSize/2, box.x + box.w, cy + fontSize/2);
-    grad.addColorStop(0, '#C9B037'); grad.addColorStop(.5,'#E6C200'); grad.addColorStop(1, '#C9B037');
-    ctx.fillStyle = grad;
-    ctx.lineWidth = Math.max(2, Math.floor(fontSize*0.06));
-    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-    ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = Math.max(8, Math.floor(fontSize*0.2));
-
-    ctx.strokeText(text, cx, cy);
-    ctx.fillText(text, cx, cy);
-
-    // 產生 QR（若有 qrcode 欄位）
-    if(person.qrcode){
-      const qrSize = Math.min(box.w*0.4, box.h*0.7);
-      const qrCanvas = document.createElement('canvas');
-      await QRCode.toCanvas(qrCanvas, person.qrcode, { width: qrSize, margin: 1, errorCorrectionLevel: 'M' });
-      // 外框（細金框），置於文字正下方
-      const qrX = cx - qrSize/2;
-      const qrY = box.y + box.h*0.62;
-      ctx.drawImage(qrCanvas, qrX, qrY);
-      ctx.lineWidth = Math.max(2, Math.floor(qrSize*0.02));
-      ctx.strokeStyle = '#C9B037';
-      ctx.strokeRect(qrX, qrY, qrSize, qrSize);
-    }
-
-    const a=document.createElement('a');
-    const safeName = (person.name||'guest').replace(/[^\w\u4e00-\u9fa5-]+/g,'_');
-    a.download = `${person.item||''}-${person.number||''}-${safeName}.png`;
-    a.href = canvas.toDataURL('image/png'); a.click();
-  }
-
-  /* ===================== Init ===================== */
-  function init(){ loadRoster(); }
-  init();
-  </script>
-</body>
-</html>
+/* ---------- drawer & controls ---------- */
+function openD(o,focus){$("#drawer").hidden=!o;$("#scrim").hidden=!o;if(o){renderPeople();(focus||$("#closeDrawer")).focus()}}
+$("#openDrawer").onclick=()=>openD(true);
+$("#quickAdd").onclick=()=>{openD(true,$("#addName"));$("#drawer").scrollTop=0};
+$("#closeDrawer").onclick=()=>openD(false);$("#scrim").onclick=()=>openD(false);
+addEventListener("keydown",e=>{
+  if(e.key==="Escape")openD(false);
+  const tag=document.activeElement.tagName;
+  if(e.code==="Space"&&$("#drawer").hidden&&tag!=="TEXTAREA"&&tag!=="INPUT"){e.preventDefault();spin()}
+});
+$("#noRepeat").onchange=()=>{store.set("pd_norep",$("#noRepeat").checked?"1":"0");refresh()};
+$("#saveOpts").onclick=()=>{opts=parseOpts($("#optsInput").value);store.set("pd_opts",$("#optsInput").value);rotation=0;drawWheel();$("#optsMsg").textContent=`已套用 ${opts.length} 格`};
+$("#resetOpts").onclick=()=>{$("#optsInput").value=DEFAULT_OPTS};
+let resetArm=false;
+$("#resetBtn").onclick=e=>{
+  if(!resetArm){resetArm=true;e.target.textContent="再按一次確認";setTimeout(()=>{resetArm=false;e.target.textContent="清除紀錄"},2500);return}
+  resetArm=false;e.target.textContent="清除紀錄";winners=[];save();refresh();
+};
+$("#soundBtn").onclick=()=>{sound=!sound;store.set("pd_sound",sound?"1":"0");$("#soundBtn").textContent="音效 "+(sound?"開":"關");$("#soundBtn").setAttribute("aria-pressed",sound)};
+$("#fsBtn").onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+$("#spinBtn").onclick=spin;
+addEventListener("resize",sizeWheel);
+load();sizeWheel();
+if(document.fonts)document.fonts.ready.then(drawWheel);
+})();
+</script>

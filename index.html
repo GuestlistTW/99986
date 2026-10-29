@@ -193,6 +193,18 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 .reveal-card .label{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;color:var(--muted)}
 .reveal-card .who-name{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
 
+.tstage{position:fixed;inset:0;z-index:25;background:var(--night);background-image:radial-gradient(70vmax 50vmax at 50% -10%, #3b1a5e 0%, transparent 60%);display:flex;flex-direction:column;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px))}
+.tstage-in{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
+.tstage .eyebrow{font-family:var(--f-mono);font-size:13px;letter-spacing:.18em;color:var(--muted)}
+.t-en{font-family:var(--f-display);font-size:clamp(44px,12vw,150px);line-height:1;text-wrap:balance;word-break:break-word;animation:bigpop .8s cubic-bezier(.2,1.5,.4,1)}
+.t-zh{font-weight:900;font-size:clamp(20px,4vw,40px);color:var(--yellow)}
+.t-who{margin-top:14px;padding-top:18px;border-top:2px dashed var(--line);width:min(760px,100%);min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.t-who .rev-flag{font-size:clamp(56px,14vw,110px)}
+.t-who.rolling .who-name{color:var(--muted)}
+.t-who.done .who-name{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.tstage-foot{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;padding-top:12px}
+@media (max-width:520px){.tstage-foot .spin{width:100%}}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:30;width:100%;height:100%}
 @media (prefers-reduced-motion:reduce){.spin:hover{animation:none}}
 </style>
@@ -241,7 +253,7 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
       <div class="task-en" id="taskEn">SPIN THE WHEEL!</div>
       <div class="task-zh" id="taskZh">按下轉盤開始</div>
       <div class="who" id="who">
-        <div class="hint" id="whoHint">轉盤決定任務，再從名單隨機跳出一位幸運兒，顯示名字與 IG。</div>
+        <div class="hint" id="whoHint">轉盤先決定任務，畫面會放大顯示，再按 DRAW 從名單抽出一位。</div>
         <div class="who-name" id="whoName"></div>
         <div class="who-ig" id="whoIg"></div>
         <div class="who-no" id="whoNo"></div>
@@ -301,6 +313,24 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
   </div>
 </div>
 
+<div class="tstage" id="tstage" hidden>
+  <div class="tstage-in">
+    <div class="eyebrow">THE WHEEL SAYS · 轉到了</div>
+    <div class="t-en" id="tsEn"></div>
+    <div class="t-zh" id="tsZh"></div>
+    <div class="t-who" id="tsWho" aria-live="polite">
+      <div class="hint" id="tsHint"></div>
+      <div class="rev-flag" id="tsFlag" hidden></div>
+      <div class="who-name" id="tsName"></div>
+      <div class="who-ig" id="tsIg"></div>
+      <div class="who-no" id="tsNo"></div>
+    </div>
+  </div>
+  <div class="tstage-foot">
+    <button class="spin" id="tsDraw" type="button">DRAW<small>抽一位</small></button>
+    <button class="btn" id="tsBack" type="button">Back 回轉盤</button>
+  </div>
+</div>
 <div class="splash" id="splash" hidden>
   <div class="splash-in">
     <div class="eyebrow" id="spEb"></div>
@@ -373,7 +403,7 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 
 <script>
 /* 報名名單：一行一人 [桌號, 姓名, 國籍, IG]。要改名單就改這裡，改完把 LIST_VER 換成新的日期，手機打開就會自動換成新名單。 */
-const LIST_VER="2026-10-29a";
+const LIST_VER="2026-10-29b";
 const LIST=[["1", "Gary Fong", "馬來西亞", "@garyfjt"],
 ["1", "Aw Teck Woon", "新加坡", "@dashyboy"],
 ["1", "Jacob", "香港", "@Jacob_nammers"],
@@ -746,22 +776,20 @@ const LIST=[["1", "Gary Fong", "馬來西亞", "@garyfjt"],
 ["40", "城城", "台灣", "@f_ilbsine"],
 ["40", "阿碩", "台灣", "@zonapha"],
 ["40", "林洲宏", "台灣", "@moumou_chou"],
-["40", "顧書炫", "台灣", "@shushuanku"]];
+["40", "顧書炫", "台灣", "@shushuanku"],
+["28", "小明", "台灣", "@fridayhsieh"]];
 (function(){
 const $=s=>document.querySelector(s);
 const TAU=Math.PI*2;
 const COLORS=["#ff3b4f","#ff8a1f","#ffd23f","#2fd27a","#2f8cff","#a34dff","#ff8fc7","#6fd3ff","#ffffff","#7a4a2a"];
 const TEXT_ON={"#ffd23f":"#140b24","#2fd27a":"#140b24","#ff8fc7":"#140b24","#6fd3ff":"#140b24","#ffffff":"#140b24","#ff8a1f":"#140b24"};
-const DEFAULT_OPTS=`喝一杯 | Take a Shot! | 1
-幸運得主 | Lucky Winner | 1
-全場乾杯 | Everybody Cheers! | 0
-跳一段舞 | Dance It Out | 1
-幸運得主 | Lucky Winner | 1
-抱抱旁邊的人 | Hug Your Neighbor | 1
-再轉一次 | Spin Again | 0
-彩虹自拍 | Rainbow Selfie | 1
+const DEFAULT_OPTS=`喝一杯 | Drink Up | 1
 親一個人 | Kiss Someone | 1
-幸運得主 | Lucky Winner | 1`;
+伸展台走秀 | Walk the Runway | 1
+全桌一起喝 | Your Table Drinks | 1
+跳一段舞 | Show Us Your Moves | 1
+抱一個你喜歡的人 | Hug Someone You Like | 1
+全場乾杯 | Everybody Drinks | 0`;
 const SAMPLE=[["小雨","rain_pride","台灣"],["Kevin","kevin.tw","台灣"],["阿翔","shiang_0831","台灣"],["Mia","mia.rainbow","日本"],["Yuki","yuki.dances","日本"],["Jordan","jordan_tpe","美國"],["Sam","sam_is_here","美國"],["Leo","leo_in_taipei","香港"]];
 /* 國籍對照：[中文, English, 國碼, 其他寫法...] */
 const NAT=[["台灣","Taiwan","TW","taiwan","taiwanese","臺灣","roc"],["日本","Japan","JP","japan","japanese"],["韓國","Korea","KR","korea","south korea","korean","南韓"],["香港","Hong Kong","HK","hongkong","hong kong"],["澳門","Macau","MO","macao","macau"],["中國","China","CN","china","chinese","中國大陸","大陸"],["新加坡","Singapore","SG","singapore"],["馬來西亞","Malaysia","MY","malaysia","大馬"],["泰國","Thailand","TH","thailand","thai"],["菲律賓","Philippines","PH","philippines","filipino"],["越南","Vietnam","VN","vietnam","viet nam"],["印尼","Indonesia","ID","indonesia"],["印度","India","IN","india"],["蒙古","Mongolia","MN","mongolia"],["美國","USA","US","usa","united states","america","american"],["加拿大","Canada","CA","canada"],["墨西哥","Mexico","MX","mexico"],["巴西","Brazil","BR","brazil"],["智利","Chile","CL","chile","chilean"],["阿根廷","Argentina","AR","argentina"],["英國","UK","GB","uk","united kingdom","britain","england","british"],["法國","France","FR","france","french"],["德國","Germany","DE","germany","german"],["荷蘭","Netherlands","NL","netherlands","holland","dutch"],["西班牙","Spain","ES","spain"],["義大利","Italy","IT","italy","意大利"],["澳洲","Australia","AU","australia","澳大利亞"],["紐西蘭","New Zealand","NZ","new zealand"]];
@@ -820,12 +848,18 @@ function load(){
   let saved=null;try{saved=JSON.parse(store.get("pd2_people","null"))}catch(e){}
   try{winners=JSON.parse(store.get("pd2_winners","[]"))||[]}catch(e){winners=[]}
   if(LIST.length&&store.get("pd_listver","")!==LIST_VER){
-    // built-in list was updated: switch to it and start fresh
-    people=fromList();winners=[];isSample=false;store.set("pd_listver",LIST_VER);save();
+    // built-in list was updated: switch to it, but keep people added on this device and the winners drawn so far
+    const fresh=fromList(),key=p=>p.name+"|"+String(p.ig||"").toLowerCase(),byKey=new Map(fresh.map(p=>[key(p),p]));
+    const old=Array.isArray(saved)&&store.get("pd2_sample","0")!=="1"?saved:[],oldById=new Map(old.map(p=>[p.id,p]));
+    const extra=old.filter(p=>p.no==="現場"&&!byKey.has(key(p)));
+    people=fresh.concat(extra);
+    const ids=new Set(people.map(p=>p.id));
+    winners=winners.map(w=>{if(ids.has(w.id))return w;const o=oldById.get(w.id)||w,n=byKey.get(key(o));return n?{...w,id:n.id,table:n.table,nat:n.nat}:null}).filter(Boolean);
+    isSample=false;store.set("pd_listver",LIST_VER);save();
   }else if(Array.isArray(saved)&&saved.length){people=saved;isSample=store.get("pd2_sample","0")==="1";people.forEach(p=>{if(p.nat==null)p.nat="";if(p.table==null)p.table="";if(p.cap==null)p.cap=""})}
   else if(LIST.length){people=fromList();isSample=false;save()}
   else{people=SAMPLE.map(([n,i,c])=>person(n,i,"範例",c));isSample=true}
-  $("#optsInput").value=store.get("pd_opts3",DEFAULT_OPTS);
+  $("#optsInput").value=store.get("pd_opts4",DEFAULT_OPTS);
   opts=parseOpts($("#optsInput").value);
   $("#noRepeat").checked=store.get("pd_norep","1")==="1";
   setSound(sound);
@@ -1051,27 +1085,42 @@ function spin(){
   setResult("SPINNING · 轉動中","SPINNING…","轉轉轉…","");
   spinTo(segs.length,i=>mode==="task"?landedTask(segs[i].o):mode==="nat"?landedNat(segs[i].g):landedTable(segs[i].g));
 }
+let curTask=null,tsBusy=false;
 function landedTask(o){
-  setResult("THE WHEEL SAYS · 轉到了",(o.en||o.zh).toUpperCase(),o.en?o.zh:"","");beep(1200,.15,"triangle",.07);
-  if(!o.pick){
-    $("#whoHint").hidden=false;$("#whoHint").textContent=/再轉|spin again/i.test(o.zh+o.en)?"這次不算！再按一次 SPIN":"全場一起來！這輪不抽人，再按一次 SPIN";
-    burst(80);setBusy(false);refresh(false);return;
-  }
-  setTimeout(()=>rollName(o),700);
+  setResult("THE WHEEL SAYS · 轉到了",(o.en||o.zh).toUpperCase(),o.en?o.zh:"",o.pick?"":"全場一起來！這輪不抽人。");
+  setBusy(false);curTask=o;openTaskStage(o);
 }
-function rollName(o){
-  const who=$("#who");who.className="who rolling";
+function openTaskStage(o){
+  const en=$("#tsEn");en.textContent=(o.en||o.zh).toUpperCase();en.style.animation="none";void en.offsetWidth;en.style.animation="";
+  $("#tsZh").textContent=o.en?o.zh:"";
+  $("#tsWho").className="t-who";$("#tsFlag").hidden=true;$("#tsName").textContent="";$("#tsIg").textContent="";$("#tsNo").textContent="";
+  const hint=$("#tsHint");hint.hidden=false;
+  if(o.pick&&pool.length){hint.textContent="點 DRAW 抽出一位 · Tap DRAW to pick someone";$("#tsDraw").hidden=false;$("#tsDraw").disabled=false}
+  else{hint.textContent=o.pick?"名單抽完了。請加人或清除抽中紀錄。":"全場一起來！這輪不抽人 · Everyone joins in";$("#tsDraw").hidden=true}
+  $("#tsBack").disabled=false;$("#tsBack").textContent="Back 回轉盤";
+  $("#tstage").hidden=false;fanfare();burst(220);
+  setTimeout(()=>{(!$("#tsDraw").hidden?$("#tsDraw"):$("#tsBack")).focus()},50);
+}
+function tsDraw(){
+  const o=curTask;if(tsBusy||!o||!o.pick||!pool.length)return;
+  tsBusy=true;$("#tsDraw").disabled=true;$("#tsBack").disabled=true;$("#tsHint").hidden=true;
+  const who=$("#tsWho");who.className="t-who rolling";
   const winner=pool[rnd(pool.length)];let delay=45,total=0;
+  const show=p=>{$("#tsName").textContent=p.name;$("#tsIg").textContent=p.ig?"@"+p.ig:""};
   (function step(){
-    const p=pool[rnd(pool.length)];$("#whoName").textContent=p.name;$("#whoIg").textContent=p.ig?"@"+p.ig:"";
-    beep(500+rnd(400),.02,"sine",.03);total+=delay;delay*=1.09;
-    if(total<3200)return setTimeout(step,delay);
-    $("#whoName").textContent="";const wf=natInfo(winner.nat).flag;if(wf){const f=document.createElement("span");f.className="flag";f.textContent=wf;$("#whoName").append(f)}$("#whoName").append(winner.name);$("#whoIg").textContent=winner.ig?"@"+winner.ig:"";$("#whoNo").textContent=noText(winner);
-    who.className="who done";
-    winners.push({id:winner.id,no:winner.no,table:winner.table,name:winner.name,ig:winner.ig,nat:winner.nat,task:(o.en?o.en+" ":"")+o.zh,t:Date.now()});
-    save();setBusy(false);refresh();fanfare();burst(220);
+    show(pool[rnd(pool.length)]);beep(500+rnd(400),.02,"sine",.03);total+=delay;delay*=1.09;
+    if(total<3600)return setTimeout(step,delay);
+    show(winner);const fl=natInfo(winner.nat).flag;$("#tsFlag").textContent=fl;$("#tsFlag").hidden=!fl;$("#tsNo").textContent=noText(winner);
+    who.className="t-who done";
+    // mirror on the main panel
+    withFlag($("#whoName"),fl,winner.name);$("#whoIg").textContent=winner.ig?"@"+winner.ig:"";$("#whoNo").textContent=noText(winner);$("#whoHint").hidden=true;$("#who").className="who done";
+    winners.push({id:winner.id,no:winner.no,table:winner.table,name:winner.name,ig:winner.ig,nat:winner.nat,task:o.en||o.zh,t:Date.now()});
+    save();refresh();fanfare();burst(240);
+    $("#tsDraw").hidden=true;$("#tsBack").disabled=false;$("#tsBack").textContent="Next 下一輪";$("#tsBack").focus();tsBusy=false;
   })();
 }
+function closeTaskStage(){if(tsBusy)return;$("#tstage").hidden=true;curTask=null}
+$("#tsDraw").onclick=tsDraw;$("#tsBack").onclick=closeTaskStage;
 function noText(p){const i=natInfo(p.nat),bits=[];if(p.nat)bits.push(i.en+(i.zh&&i.zh!==i.en?" "+i.zh:""));if(p.table)bits.push("Table "+p.table);else if(p.no==="現場")bits.push("現場加入");else if(p.no&&p.no!=="範例")bits.push("報名編號 "+p.no);return bits.join(" · ")}
 
 /* ---------- name board (country / table) ---------- */
@@ -1159,7 +1208,7 @@ function setMode(m,initial){
   mode=m;store.set("pd_mode",m);
   $("#modeTask").setAttribute("aria-pressed",m==="task");$("#modeNat").setAttribute("aria-pressed",m==="nat");$("#modeTable").setAttribute("aria-pressed",m==="table");
   $("#sNatWrap").hidden=m!=="nat";$("#sTabWrap").hidden=m!=="table";rotation=0;buildSegs();drawWheel();
-  if(m==="task")setResult("READY? · 準備好了嗎","SPIN THE WHEEL!","按下轉盤開始","轉盤決定任務，再從名單隨機跳出一位幸運兒，顯示名字與 IG。");
+  if(m==="task")setResult("READY? · 準備好了嗎","SPIN THE WHEEL!","按下轉盤開始","轉盤先決定任務，畫面會放大顯示，再按 DRAW 從名單抽出一位。");
   else if(m==="table")setResult("TABLE DRAW · 桌號抽獎","PICK A TABLE!","先抽桌號，再從這一桌抽一位",tableGroups.length?`共 ${tableGroups.length} 桌，每桌機率相同。抽中桌號後會列出這桌所有人，再按 DRAW 抽一位。`:"名單還沒有桌號資料。");
   else setResult("COUNTRY DRAW · 國籍抽獎","PICK A COUNTRY!","先抽國籍，再從該國名單抽一位",natGroups.length?`共 ${natGroups.length} 個國籍，每個國籍機率相同。抽中國籍後會列出所有人，再按 DRAW 抽一位。`:"名單還沒有國籍資料。請到「名單 / 設定」幫參加者填上國籍，或匯入有「國籍」欄的 Excel。");
 }
@@ -1185,7 +1234,7 @@ $("#soundBtn").onclick=()=>setSound(!sound);
 $("#fsBtn").onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
 $("#spinBtn").onclick=spin;
 $("#noRepeat").onchange=()=>{store.set("pd_norep",$("#noRepeat").checked?"1":"0");refresh()};
-$("#saveOpts").onclick=()=>{opts=parseOpts($("#optsInput").value);store.set("pd_opts3",$("#optsInput").value);if(mode==="task"){rotation=0;buildSegs();drawWheel()}$("#optsMsg").textContent=`已套用 ${opts.length} 格`};
+$("#saveOpts").onclick=()=>{opts=parseOpts($("#optsInput").value);store.set("pd_opts4",$("#optsInput").value);if(mode==="task"){rotation=0;buildSegs();drawWheel()}$("#optsMsg").textContent=`已套用 ${opts.length} 格`};
 $("#resetOpts").onclick=()=>{$("#optsInput").value=DEFAULT_OPTS};
 let resetArm=false;
 $("#resetBtn").onclick=e=>{
@@ -1195,6 +1244,7 @@ $("#resetBtn").onclick=e=>{
 addEventListener("keydown",e=>{
   const tag=document.activeElement.tagName;
   if(!$("#splash").hidden&&(e.key==="Escape"||e.code==="Space"||e.key==="Enter")){e.preventDefault();endSplash();return}
+  if(!$("#tstage").hidden&&(e.key==="Escape"||e.code==="Space")){e.preventDefault();if(e.code==="Space"&&!$("#tsDraw").hidden)tsDraw();else closeTaskStage();return}
   if(e.key==="Escape"){if(!$("#menu").hidden)menu(false);else if(!$("#drawer").hidden)openD(false);else if(!$("#reveal").hidden)$("#reveal").hidden=true;else if(!$("#board").hidden&&!boardBusy)closeBoard()}
   if(e.code==="Space"&&tag!=="TEXTAREA"&&tag!=="INPUT"&&$("#drawer").hidden){
     e.preventDefault();

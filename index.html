@@ -38,7 +38,6 @@ header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 10p
 .brand h1{margin:0;font-family:var(--f-display);font-size:clamp(26px,4vw,44px);line-height:1;font-weight:400}
 .brand h1 small{font-family:var(--f-zh);font-weight:900;font-size:.5em;color:var(--yellow);margin-left:.4em;vertical-align:middle}
 .hdr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-body.clean .seg{display:none}
 .menu-wrap{position:relative;margin-left:auto}
 .menu-btn{width:38px;height:38px;border-radius:50%;background:transparent;border:1.5px solid transparent;color:var(--muted);opacity:.4;display:grid;place-items:center}
 .menu-btn:hover,.menu-btn[aria-expanded="true"]{opacity:1;border-color:var(--line)}
@@ -52,9 +51,10 @@ button{font:inherit;cursor:pointer;border:0;color:inherit}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 .seg{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;padding:3px;background:var(--night-2)}
-.seg button{padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;background:transparent;color:var(--muted);font-family:var(--f-display);font-weight:400;letter-spacing:.02em}
+.seg button{padding:9px 18px;border-radius:999px;font-size:15px;background:transparent;color:var(--muted);font-family:var(--f-display);font-weight:400;letter-spacing:.02em;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--night)}
-.seg button:disabled{cursor:not-allowed}
+.seg button:disabled{cursor:not-allowed;opacity:.45}
+.seg button[aria-pressed="true"]:disabled{opacity:1}
 
 
 .stage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:center}
@@ -158,8 +158,24 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 .board-head .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;color:var(--muted)}
 .board-en{font-family:var(--f-display);font-size:clamp(34px,6vw,76px);line-height:1;word-break:break-word}
 .board-zh{font-weight:900;font-size:clamp(16px,2.2vw,24px);color:var(--yellow)}
-.flag{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;font-weight:400;margin-right:.25em}
-.rev-flag{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;font-size:clamp(48px,9vw,80px);line-height:1}
+.flag{font-family:"Apple Color Emoji","Noto Color Emoji",sans-serif;font-weight:400;margin-right:.25em}
+.rev-flag{font-family:"Apple Color Emoji","Noto Color Emoji",sans-serif;font-size:clamp(84px,22vw,160px);line-height:1}
+.rev-badge{font-family:var(--f-display);font-size:clamp(40px,11vw,84px);line-height:1;color:var(--yellow)}
+.board-big{font-size:clamp(64px,16vw,140px);line-height:1;flex:none}
+.board-big.flagbig{font-family:"Apple Color Emoji","Noto Color Emoji",sans-serif}
+.board-big.num{font-family:var(--f-display);color:var(--yellow)}
+.board-title{display:flex;align-items:center;gap:16px;min-width:0}
+.splash{position:fixed;inset:0;z-index:27;background:rgba(20,11,36,.94);display:grid;place-items:center;text-align:center;cursor:pointer;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px))}
+.splash-in{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:100%}
+.splash .eyebrow{font-family:var(--f-mono);font-size:13px;letter-spacing:.18em;color:var(--muted)}
+.splash-big{line-height:1;animation:bigpop .8s cubic-bezier(.2,1.5,.4,1)}
+.splash-big.flagbig{font-family:"Apple Color Emoji","Noto Color Emoji",sans-serif;font-size:min(62vmin,440px)}
+.splash-big.num{font-family:var(--f-display);font-size:min(58vmin,420px);color:var(--yellow);text-shadow:0 0 60px rgba(255,210,63,.45)}
+.splash-title{font-family:var(--f-display);font-size:clamp(36px,9vw,96px);line-height:1;word-break:break-word}
+.splash-sub{font-weight:900;font-size:clamp(18px,3vw,30px);color:var(--yellow)}
+.splash .hint{font-size:13px;margin-top:14px}
+@keyframes bigpop{0%{transform:scale(.2) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}
 .board-count{font-family:var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .board-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;align-content:start;padding-block:12px}
 .nchip{border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--night-2);min-width:0;transition:transform .08s}
@@ -206,7 +222,6 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
       <button type="button" id="openDrawer">名單 / 設定</button>
       <button type="button" id="soundBtn" aria-pressed="true">音效 開</button>
       <button type="button" id="fsBtn">全螢幕</button>
-      <button type="button" id="hideChrome">隱藏模式按鈕</button>
     </div>
   </div>
 </header>
@@ -254,10 +269,13 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 <!-- country board -->
 <div class="board" id="board" hidden>
   <div class="board-head">
-    <div>
+    <div class="board-title">
+    <div class="board-big" id="boardBig"></div>
+    <div style="min-width:0">
       <div class="eyebrow" id="boardEyebrow">COUNTRY DRAW · 國籍抽獎</div>
       <div class="board-en" id="boardEn"></div>
       <div class="board-zh" id="boardZh"></div>
+    </div>
     </div>
     <div class="board-count" id="boardCount"></div>
   </div>
@@ -271,6 +289,7 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
   <div class="reveal-card">
     <span class="label" id="revLabel"></span>
     <div class="rev-flag" id="revFlag"></div>
+    <div class="rev-badge" id="revBadge" hidden></div>
     <div class="who-name" id="revName"></div>
     <div class="who-ig" id="revIg"></div>
     <div class="who-no" id="revNo"></div>
@@ -282,6 +301,15 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
   </div>
 </div>
 
+<div class="splash" id="splash" hidden>
+  <div class="splash-in">
+    <div class="eyebrow" id="spEb"></div>
+    <div class="splash-big" id="spBig"></div>
+    <div class="splash-title" id="spTitle"></div>
+    <div class="splash-sub" id="spSub"></div>
+    <div class="hint">點一下看名單 · Tap to see the list</div>
+  </div>
+</div>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" hidden aria-label="名單與設定">
   <div class="row" style="justify-content:space-between"><h2>名單與設定</h2><button class="btn" id="closeDrawer" type="button">關閉</button></div>
@@ -800,7 +828,7 @@ function load(){
   $("#optsInput").value=store.get("pd_opts3",DEFAULT_OPTS);
   opts=parseOpts($("#optsInput").value);
   $("#noRepeat").checked=store.get("pd_norep","1")==="1";
-  setSound(sound);setClean(store.get("pd_clean","0")==="1");
+  setSound(sound);
   refresh();setMode(mode,true);
 }
 const wonIds=()=>new Set(winners.map(w=>w.id));
@@ -818,6 +846,7 @@ function refresh(renderList=true){
   if(!spinning){buildSegs();drawWheel()}
 }
 function buildSegs(){
+  wheelDirty=true;
   if(mode==="task"){
     segs=opts.map(o=>({main:(o.en||o.zh).toUpperCase(),sub:o.en?o.zh:"",o}));
     $("#hubTitle").textContent="PRIDE";$("#hubCount").textContent=pool.length+" 人";
@@ -930,9 +959,9 @@ $("#exportBtn").onclick=()=>download(`名單_${stamp()}.csv`,[["桌號","桌長"
 $("#exportWinBtn").onclick=()=>download(`得主_${stamp()}.csv`,[["順序","桌號","姓名","IG","國籍","抽到","時間"],...winners.map((w,i)=>[i+1,w.table||"",w.name,w.ig,w.nat||"",w.task,new Date(w.t).toLocaleString("zh-TW")])]);
 
 /* ---------- wheel ---------- */
-const cv=$("#wheel"),ctx=cv.getContext("2d");
-const F_EN='"Bungee","Noto Sans TC",sans-serif',F_ZH='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif',F_EMO='"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif';
-function sizeWheel(){const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);const s=Math.round(r.width*dpr);if(s>0&&cv.width!==s){cv.width=s;cv.height=s}drawWheel()}
+const cv=$("#wheel");let ctx=cv.getContext("2d");
+const F_EN='"Bungee","Noto Sans TC",sans-serif',F_ZH='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif',F_EMO='"Apple Color Emoji","Noto Color Emoji",sans-serif';
+function sizeWheel(){const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);const s=Math.round(r.width*dpr);if(s>0&&cv.width!==s){cv.width=s;cv.height=s;wheelDirty=true}drawWheel()}
 function fit(txt,font,base,maxW){ctx.font=font(base);const w=ctx.measureText(txt).width;return w>maxW?base*maxW/w:base}
 function drawLabel(s,R,S,seg,fg){
   const maxW=R*0.6,x=R*0.9,base=S*0.05,enF=z=>`400 ${z}px ${F_EN}`,zhF=z=>`700 ${z}px ${F_ZH}`;
@@ -953,9 +982,13 @@ function drawLabel(s,R,S,seg,fg){
     y+=sz});
   if(s.sub){ctx.globalAlpha=.8;ctx.font=zhF(subSz);ctx.fillText(s.sub,x,y+subSz*0.3);ctx.globalAlpha=1}
 }
-function drawWheel(){
-  const S=cv.width,c=S/2,R=c*0.96,n=segs.length||1,seg=TAU/n;
-  ctx.clearRect(0,0,S,S);ctx.save();ctx.translate(c,c);ctx.rotate(rotation);
+let wheelCache=null,wheelDirty=true;
+function renderCache(){
+  const S=cv.width;if(!wheelCache)wheelCache=document.createElement("canvas");
+  wheelCache.width=S;wheelCache.height=S;
+  const real=ctx;ctx=wheelCache.getContext("2d");
+  const c=S/2,R=c*0.96,n=segs.length||1,seg=TAU/n;
+  ctx.clearRect(0,0,S,S);ctx.save();ctx.translate(c,c);
   ctx.beginPath();ctx.arc(0,0,R+S*0.02,0,TAU);ctx.fillStyle="#fff7ea";ctx.fill();
   segs.forEach((s,i)=>{
     const a0=-Math.PI/2+i*seg-seg/2,col=s.color||COLORS[i%COLORS.length];
@@ -965,7 +998,12 @@ function drawWheel(){
   });
   const bulbs=Math.max(24,n*3);
   for(let i=0;i<bulbs;i++){const a=i*TAU/bulbs;ctx.beginPath();ctx.arc(Math.cos(a)*(R+S*0.01),Math.sin(a)*(R+S*0.01),S*0.007,0,TAU);ctx.fillStyle=i%2?"#ffd23f":"#ff3b4f";ctx.fill()}
-  ctx.restore();
+  ctx.restore();ctx=real;wheelDirty=false;
+}
+function drawWheel(){
+  const S=cv.width;
+  if(wheelDirty||!wheelCache||wheelCache.width!==S)renderCache();
+  ctx.clearRect(0,0,S,S);ctx.save();ctx.translate(S/2,S/2);ctx.rotate(rotation);ctx.drawImage(wheelCache,-S/2,-S/2);ctx.restore();
 }
 const mod=x=>((x%TAU)+TAU)%TAU;
 function indexAt(rot,n){return Math.round(mod(-rot)/(TAU/n))%n}
@@ -1040,24 +1078,34 @@ function noText(p){const i=natInfo(p.nat),bits=[];if(p.nat)bits.push(i.en+(i.zh&
 let boardKind=null,boardKey=null,boardBusy=false;
 function landedNat(g){
   setResult("COUNTRY · 抽中國籍",g.en.toUpperCase(),(g.zh&&g.zh!==g.en?g.zh+" · ":"")+g.people.length+" 人","",g.flag);
-  beep(1200,.15,"triangle",.07);burst(120);setBusy(false);
-  setTimeout(()=>openBoard("nat",g.key),1100);
+  setBusy(false);
+  splash({eb:"COUNTRY · 抽中國籍",big:g.flag||"",flag:true,title:g.en.toUpperCase(),sub:(g.zh&&g.zh!==g.en?g.zh+" · ":"")+g.people.length+" 人"},()=>openBoard("nat",g.key));
 }
 function landedTable(g){
   setResult("TABLE · 抽中桌號","TABLE "+g.key,(g.cap?"桌長 "+g.cap+" · ":"")+g.people.length+" 人","");
-  beep(1200,.15,"triangle",.07);burst(120);setBusy(false);
-  setTimeout(()=>openBoard("table",g.key),1100);
+  setBusy(false);
+  splash({eb:"TABLE · 抽中桌號",big:g.key,flag:false,title:"TABLE "+g.key,sub:(g.cap?"桌長 "+g.cap+" · ":"")+g.people.length+" 人"},()=>openBoard("table",g.key));
 }
+let splashNext=null,splashTimer=null;
+function splash(o,next){
+  const big=$("#spBig");big.className="splash-big "+(o.flag?"flagbig":"num");big.textContent=o.big;big.hidden=!o.big;
+  $("#spEb").textContent=o.eb;$("#spTitle").textContent=o.title;$("#spSub").textContent=o.sub;
+  $("#splash").hidden=false;fanfare();burst(260);
+  splashNext=next;clearTimeout(splashTimer);splashTimer=setTimeout(endSplash,3200);
+}
+function endSplash(){clearTimeout(splashTimer);if($("#splash").hidden)return;$("#splash").hidden=true;const n=splashNext;splashNext=null;if(n)n()}
+$("#splash").onclick=endSplash;
 const inBoard=p=>boardKind==="nat"?p.nat===boardKey:p.table===boardKey;
 function boardCandidates(){const won=wonIds(),nr=$("#noRepeat").checked;return people.filter(p=>inBoard(p)&&!(nr&&won.has(p.id)))}
 function boardTitle(){
-  if(boardKind==="nat"){const i=natInfo(boardKey);return {eb:"COUNTRY DRAW · 國籍抽獎",flag:i.flag,en:i.en.toUpperCase(),zh:i.zh&&i.zh!==i.en?i.zh:"",tag:"Country "+i.en}}
+  if(boardKind==="nat"){const i=natInfo(boardKey);return {eb:"COUNTRY DRAW · 國籍抽獎",big:i.flag,en:i.en.toUpperCase(),zh:i.zh&&i.zh!==i.en?i.zh:"",tag:"Country "+i.en}}
   const cap=(people.find(p=>p.table===boardKey&&p.cap)||{}).cap||"";
-  return {eb:"TABLE DRAW · 桌號抽獎",en:"TABLE "+boardKey,zh:cap?"桌長 Captain · "+cap:"",tag:"Table "+boardKey};
+  return {eb:"TABLE DRAW · 桌號抽獎",big:boardKey,en:"TABLE",zh:cap?"桌長 Captain · "+cap:"",tag:"Table "+boardKey};
 }
 function openBoard(kind,key){
   boardKind=kind;boardKey=key;const t=boardTitle();
-  $("#boardEyebrow").textContent=t.eb;withFlag($("#boardEn"),t.flag,t.en);$("#boardZh").textContent=t.zh;
+  $("#boardEyebrow").textContent=t.eb;$("#boardEn").textContent=t.en;
+  const bb=$("#boardBig");bb.className="board-big "+(kind==="nat"?"flagbig":"num");bb.textContent=t.big||"";bb.hidden=!t.big;$("#boardZh").textContent=t.zh;
   renderBoard();$("#reveal").hidden=true;$("#board").hidden=false;$("#boardGrid").scrollTop=0;$("#boardDraw").focus();
 }
 function renderBoard(){
@@ -1084,7 +1132,8 @@ function boardDraw(){
     save();refresh();fanfare();burst(240);
     setTimeout(()=>{
       $("#revLabel").textContent="WINNER · "+t.tag.toUpperCase();
-      $("#revFlag").textContent=natInfo(winner.nat).flag;
+      $("#revFlag").textContent=natInfo(winner.nat).flag;$("#revFlag").hidden=!natInfo(winner.nat).flag;
+      $("#revBadge").textContent=winner.table?"TABLE "+winner.table:"";$("#revBadge").hidden=boardKind!=="table"||!winner.table;
       $("#revName").textContent=winner.name;$("#revIg").textContent=winner.ig?"@"+winner.ig:"";$("#revNo").textContent=noText(winner);
       $("#revAgain").hidden=!boardCandidates().length;$("#reveal").hidden=false;
       boardBusy=false;$("#boardBack").disabled=false;$("#boardDraw").disabled=!boardCandidates().length;
@@ -1115,9 +1164,14 @@ function setMode(m,initial){
   else if(m==="table")setResult("TABLE DRAW · 桌號抽獎","PICK A TABLE!","先抽桌號，再從這一桌抽一位",tableGroups.length?`共 ${tableGroups.length} 桌，每桌機率相同。抽中桌號後會列出這桌所有人，再按 DRAW 抽一位。`:"名單還沒有桌號資料。");
   else setResult("COUNTRY DRAW · 國籍抽獎","PICK A COUNTRY!","先抽國籍，再從該國名單抽一位",natGroups.length?`共 ${natGroups.length} 個國籍，每個國籍機率相同。抽中國籍後會列出所有人，再按 DRAW 抽一位。`:"名單還沒有國籍資料。請到「名單 / 設定」幫參加者填上國籍，或匯入有「國籍」欄的 Excel。");
 }
-$("#modeTask").onclick=()=>{if(!spinning)setMode("task")};
-$("#modeNat").onclick=()=>{if(!spinning)setMode("nat")};
-$("#modeTable").onclick=()=>{if(!spinning)setMode("table")};
+function pickMode(m){
+  if(spinning||m===mode)return;
+  ["task","nat","table"].forEach(k=>$({task:"#modeTask",nat:"#modeNat",table:"#modeTable"}[k]).setAttribute("aria-pressed",k===m));
+  requestAnimationFrame(()=>setTimeout(()=>setMode(m),0));
+}
+$("#modeTask").onclick=()=>pickMode("task");
+$("#modeNat").onclick=()=>pickMode("nat");
+$("#modeTable").onclick=()=>pickMode("table");
 function menu(o){$("#menu").hidden=!o;$("#menuBtn").setAttribute("aria-expanded",o)}
 $("#menuBtn").onclick=e=>{e.stopPropagation();menu($("#menu").hidden)};
 document.addEventListener("click",e=>{if(!$("#menu").hidden&&!e.target.closest(".menu-wrap"))menu(false)});
@@ -1126,8 +1180,7 @@ function openD(o,focus){$("#drawer").hidden=!o;$("#scrim").hidden=!o;if(o){rende
 $("#openDrawer").onclick=()=>openD(true);
 $("#quickAdd").onclick=()=>{openD(true,$("#addName"));$("#drawer").scrollTop=0};
 $("#closeDrawer").onclick=()=>openD(false);$("#scrim").onclick=()=>openD(false);
-function setClean(c){document.body.classList.toggle("clean",c);$("#hideChrome").textContent=c?"顯示模式按鈕":"隱藏模式按鈕";store.set("pd_clean",c?"1":"0")}
-$("#hideChrome").onclick=()=>setClean(!document.body.classList.contains("clean"));
+
 function setSound(s){sound=s;store.set("pd_sound",s?"1":"0");$("#soundBtn").textContent="音效 "+(s?"開":"關");$("#soundBtn").setAttribute("aria-pressed",s)}
 $("#soundBtn").onclick=()=>setSound(!sound);
 $("#fsBtn").onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
@@ -1142,6 +1195,7 @@ $("#resetBtn").onclick=e=>{
 };
 addEventListener("keydown",e=>{
   const tag=document.activeElement.tagName;
+  if(!$("#splash").hidden&&(e.key==="Escape"||e.code==="Space"||e.key==="Enter")){e.preventDefault();endSplash();return}
   if(e.key==="Escape"){if(!$("#menu").hidden)menu(false);else if(!$("#drawer").hidden)openD(false);else if(!$("#reveal").hidden)$("#reveal").hidden=true;else if(!$("#board").hidden&&!boardBusy)closeBoard()}
   if(e.code==="Space"&&tag!=="TEXTAREA"&&tag!=="INPUT"&&$("#drawer").hidden){
     e.preventDefault();
@@ -1150,7 +1204,8 @@ addEventListener("keydown",e=>{
 });
 addEventListener("resize",sizeWheel);
 load();sizeWheel();
-if(document.fonts){document.fonts.ready.then(drawWheel);try{document.fonts.load('40px "Noto Color Emoji"',"\u{1F1F9}\u{1F1FC}").then(drawWheel,()=>{})}catch(e){}}
+const redraw=()=>{wheelDirty=true;if(!spinning)drawWheel()};
+if(document.fonts){document.fonts.ready.then(redraw);if(document.fonts.addEventListener)document.fonts.addEventListener("loadingdone",redraw)}
 })();
 </script>
 

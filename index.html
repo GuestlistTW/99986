@@ -1,4 +1,4 @@
-=<!doctype html>
+<!doctype html>
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
@@ -7,7 +7,7 @@
 <title>彩虹乾杯輪盤</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Noto+Sans+TC:wght@500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Noto+Color+Emoji&family=Noto+Sans+TC:wght@500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 /* Layout: one projection-sized stage — wheel left, reveal panel right (stacked on phones); list & settings in a slide-over drawer; country draw in a full-screen name board. Single night-parade look. */
@@ -32,13 +32,20 @@ body{
 }
 img{max-width:100%}
 .stripe{height:8px;border-radius:99px;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow),var(--green),var(--blue),var(--violet),var(--pink),var(--sky),#fff)}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:14px 0 10px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 10px}
 .brand{display:flex;flex-direction:column;gap:2px}
 .brand .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
 .brand h1{margin:0;font-family:var(--f-display);font-size:clamp(26px,4vw,44px);line-height:1;font-weight:400}
 .brand h1 small{font-family:var(--f-zh);font-weight:900;font-size:.5em;color:var(--yellow);margin-left:.4em;vertical-align:middle}
 .hdr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-body.clean .hdr-actions{display:none}
+body.clean .seg{display:none}
+.menu-wrap{position:relative;margin-left:auto}
+.menu-btn{width:38px;height:38px;border-radius:50%;background:transparent;border:1.5px solid transparent;color:var(--muted);opacity:.4;display:grid;place-items:center}
+.menu-btn:hover,.menu-btn[aria-expanded="true"]{opacity:1;border-color:var(--line)}
+.menu-btn svg{width:20px;height:20px}
+.menu{position:absolute;right:0;top:44px;z-index:18;background:var(--night-2);border:1.5px solid var(--line);border-radius:16px;padding:6px;min-width:190px;display:flex;flex-direction:column;box-shadow:0 14px 40px #0008}
+.menu button{background:transparent;text-align:left;padding:10px 12px;border-radius:10px;font-weight:700;font-size:14px}
+.menu button:hover{background:var(--night)}
 button{font:inherit;cursor:pointer;border:0;color:inherit}
 .btn{background:var(--night-2);border:1.5px solid var(--line);padding:9px 14px;border-radius:999px;font-weight:700;font-size:14px}
 .btn:hover{border-color:var(--muted)}
@@ -48,10 +55,7 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px soli
 .seg button{padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;background:transparent;color:var(--muted);font-family:var(--f-display);font-weight:400;letter-spacing:.02em}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--night)}
 .seg button:disabled{cursor:not-allowed}
-.chrome-btn{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:15;width:40px;height:40px;border-radius:50%;
-  background:var(--night-2);border:1.5px solid var(--line);opacity:.55;display:grid;place-items:center}
-.chrome-btn:hover{opacity:1}
-.chrome-btn svg{width:20px;height:20px}
+
 
 .stage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:center}
 .wheel-wrap{position:relative;width:100%;max-width:640px;aspect-ratio:1;margin-inline:auto}
@@ -154,6 +158,8 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 .board-head .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;color:var(--muted)}
 .board-en{font-family:var(--f-display);font-size:clamp(34px,6vw,76px);line-height:1;word-break:break-word}
 .board-zh{font-weight:900;font-size:clamp(16px,2.2vw,24px);color:var(--yellow)}
+.flag{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;font-weight:400;margin-right:.25em}
+.rev-flag{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;font-size:clamp(48px,9vw,80px);line-height:1}
 .board-count{font-family:var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .board-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;align-content:start;padding-block:12px}
 .nchip{border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--night-2);min-width:0;transition:transform .08s}
@@ -188,17 +194,22 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
     <div class="seg" role="group" aria-label="抽獎模式">
       <button type="button" id="modeTask" aria-pressed="true">TASK</button>
       <button type="button" id="modeNat" aria-pressed="false">COUNTRY</button>
+      <button type="button" id="modeTable" aria-pressed="false">TABLE</button>
     </div>
-    <button class="btn" id="quickAdd" type="button">＋ 臨時加人</button>
-    <button class="btn" id="openDrawer" type="button">名單 / 設定</button>
-    <button class="btn" id="soundBtn" type="button" aria-pressed="true">音效 開</button>
-    <button class="btn" id="fsBtn" type="button">全螢幕</button>
-    <button class="btn" id="hideChrome" type="button">隱藏按鈕</button>
+  </div>
+  <div class="menu-wrap">
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="更多設定" aria-expanded="false" aria-controls="menu">
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+    </button>
+    <div class="menu" id="menu" hidden>
+      <button type="button" id="quickAdd">＋ 臨時加人</button>
+      <button type="button" id="openDrawer">名單 / 設定</button>
+      <button type="button" id="soundBtn" aria-pressed="true">音效 開</button>
+      <button type="button" id="fsBtn">全螢幕</button>
+      <button type="button" id="hideChrome">隱藏模式按鈕</button>
+    </div>
   </div>
 </header>
-<button class="chrome-btn" id="chromeBtn" type="button" aria-label="顯示按鈕" hidden>
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-</button>
 
 <main class="stage">
   <div class="wheel-wrap">
@@ -228,6 +239,7 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
         <span>待抽 <b id="sLeft">0</b></span>
         <span>已抽 <b id="sDone">0</b></span>
         <span id="sNatWrap" hidden>國籍 <b id="sNat">0</b></span>
+        <span id="sTabWrap" hidden>桌數 <b id="sTab">0</b></span>
         <span id="sampleTag" hidden><span class="sample-tag">範例名單</span></span>
       </div>
     </div>
@@ -243,7 +255,7 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 <div class="board" id="board" hidden>
   <div class="board-head">
     <div>
-      <div class="eyebrow">COUNTRY DRAW · 國籍抽獎</div>
+      <div class="eyebrow" id="boardEyebrow">COUNTRY DRAW · 國籍抽獎</div>
       <div class="board-en" id="boardEn"></div>
       <div class="board-zh" id="boardZh"></div>
     </div>
@@ -258,11 +270,12 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 <div class="reveal" id="reveal" hidden>
   <div class="reveal-card">
     <span class="label" id="revLabel"></span>
+    <div class="rev-flag" id="revFlag"></div>
     <div class="who-name" id="revName"></div>
     <div class="who-ig" id="revIg"></div>
     <div class="who-no" id="revNo"></div>
     <div class="row" style="justify-content:center;margin-top:10px">
-      <button class="btn primary" id="revAgain" type="button">Draw again 同國籍再抽</button>
+      <button class="btn primary" id="revAgain" type="button">Draw again 再抽一位</button>
       <button class="btn" id="revBack" type="button">Back 回轉盤</button>
       <button class="btn" id="revClose" type="button">看名單</button>
     </div>
@@ -293,7 +306,7 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
       </div>
     </div>
     <input type="search" id="search" placeholder="搜尋名字、IG 或國籍" aria-label="搜尋名單">
-    <div class="people"><table><thead><tr><th>編號</th><th>名字</th><th>IG</th><th>國籍</th><th></th></tr></thead><tbody id="peopleBody"></tbody></table></div>
+    <div class="people"><table><thead><tr><th>桌</th><th>名字</th><th>IG</th><th>國籍</th><th></th></tr></thead><tbody id="peopleBody"></tbody></table></div>
     <label class="check"><input type="checkbox" id="noRepeat" checked> 抽中的人不再重複抽</label>
     <p>國籍欄可以直接點進去改（例如：台灣、日本、Japan、USA），改完自動存。同一筆報名在表單裡出現幾行，就有幾次機會。名單存在這台裝置的瀏覽器裡，重新整理不會不見。</p>
     <div class="row"><button class="btn" id="reloadEmbed" type="button">重新載入內建報名名單</button></div>
@@ -302,7 +315,7 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 
   <section class="sec">
     <h3>匯入報名表</h3>
-    <p>上傳報名 Excel（.xlsx）或 CSV，會自動找「姓名」「IG帳號」「國籍」「報名編號」「報名狀態」欄位；狀態寫「取消」的不會匯入。也可以把名字、IG、國籍三欄從 Excel 複製貼到下方。</p>
+    <p>上傳報名 Excel（.xlsx）或 CSV，會自動找「桌號」「桌長」「姓名」「國籍」「IG」「報名狀態」欄位；狀態寫「取消」的不會匯入。也可以把名字、IG、國籍三欄從 Excel 複製貼到下方。</p>
     <div class="row"><span class="btn file">上傳 Excel / CSV<input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.txt"></span></div>
     <textarea id="pasteInput" spellcheck="false" placeholder="每行一位：名字, IG, 國籍&#10;小明, @ming_pride, 台灣&#10;Alex, alex.rainbow, USA" style="min-height:100px"></textarea>
     <div class="row"><button class="btn" id="pasteBtn" type="button">讀取貼上的內容</button></div>
@@ -331,379 +344,381 @@ code{font-family:var(--f-mono);background:var(--night);padding:1px 5px;border-ra
 <datalist id="natList"></datalist>
 
 <script>
-/* 報名名單：一行一人 [報名編號, 姓名, IG, 國籍]。要改名單就改這裡。 */
-const LIST=[["TP070", "Sean", "seanliu829", ""],
-["TP070", "Gerardo", "spacemanx2077", ""],
-["TP006", "黃信瑋", "Newbearhere", ""],
-["TP006", "蔡博任", "zhaochengen3241", ""],
-["TP006", "楊嘉瑋", "yorkcubic", ""],
-["TP009", "Dave Milford", "Seadave12", ""],
-["TP009", "Orrin Brown", "seadakine808", ""],
-["TP010", "kopan", "kopan_ex", ""],
-["TP011", "David Hioe", "@gummycubbie", ""],
-["TP012", "姜炳元", "@okaeri1911", ""],
-["TP013", "Raymond Ballard", "@Plucka_1984", ""],
-["TP013", "Viet Bui", "@Vbui92", ""],
-["TP014", "Shotaro", "shotaro_13", ""],
-["TP015", "Benson", "Beng2san4", ""],
-["TP015", "Archer", "NA", ""],
-["TP016", "Ma", "@unknownxguy", ""],
-["TP016", "V", "2000", ""],
-["TP016", "麵麵", "mianhuang", ""],
-["TP017", "Brent Baculi", "@thebacooliest", ""],
-["TP019", "丹尼", "@skyblue_danny", ""],
-["TP019", "玖哲", "@gavinchen_tw", ""],
-["TP019", "傑瑞", "@iamjerry.tw", ""],
-["TP020", "Kyle Furuya", "@magu_magumaaaa", ""],
-["TP020", "Jutton Robert", "@ messiaen333", ""],
-["TP022", "Owen", "@owen_____huang", ""],
-["TP023", "Leo Chen", "@leochen.07", ""],
-["TP024", "Dae Young Kim", "navynl", ""],
-["TP025", "Zak", "@6688kaz", ""],
-["TP025", "Steven", "没有", ""],
-["TP026", "Benny", "@bennycho7", ""],
-["TP028", "Garry Moss", "@huggabearsg", ""],
-["TP028", "Yew Eng Tee", "@ethillion", ""],
-["TP029", "Hideaki", "@huskyhide0504", ""],
-["TP030", "Harris", "@harris.nyc", ""],
-["TP031", "Weson Wu", "Weson_Wu", ""],
-["TP033", "Jayden", "j.dn___kr", ""],
-["TP033", "Hiro", "Hiro85_kr", ""],
-["TP033", "Logan", "Logan___kim___", ""],
-["TP033", "QQ", "q__q94", ""],
-["TP033", "Jun", "junstify", ""],
-["TP034", "Randy", "@randyreborn13", ""],
-["TP035", "Oscar", "@Cool_oscar", ""],
-["TP036", "陳明彥", "@mingyeng1978", ""],
-["TP037", "jaywong", "jaywong_1218", ""],
-["TP038", "Gary Fong", "@garyfjt", ""],
-["TP039", "Xiaobill", "@Xiaobill", ""],
-["TP040", "Aw Teck Woon", "@dashyboy", ""],
-["TP041", "碰碰", "PonPonYeh", ""],
-["TP041", "開開", "rpenwow", ""],
-["TP041", "船船", "nickhuang28", ""],
-["TP042", "陳宇恆（阿亙）", "@hallo.quantum", ""],
-["TP043", "Xintong Li", "xintong_li", ""],
-["TP043", "王楠", "mrmetamorphosis", ""],
-["TP043", "Kenny Tsai", "kennychiwa", ""],
-["TP044", "黑糖", "@Siriuslee2002", ""],
-["TP045", "小艾文", "@friendalvin_tw", ""],
-["TP046", "David Cuajunco", "Ultraslowbro", ""],
-["TP047", "Neil", "djneilzo", ""],
-["TP048", "黃鈞鈞", "@chunnywalker", ""],
-["TP050", "Adam", "ebear.hk", ""],
-["TP051", "Kota", "@kohi78", ""],
-["TP053", "Shayne Hsu", "shayno887", ""],
-["TP053", "Fabio Cigana", "fabio.cigana", ""],
-["TP054", "Jack van Remmen", "@brother_jack", ""],
-["TP055", "Lim Boon Teck", "bryan_limbt", ""],
-["TP055", "Randy Po", "randypolyanna", ""],
-["TP055", "James Giannako", "James_13D", ""],
-["TP055", "Arturo Cortes", "chilean_traveller", ""],
-["TP055", "Rei Rei", "reikumarei", ""],
-["TP055", "Sam Chan", "maullly", ""],
-["TP055", "Tan Tong Wei (Luke)", "reinaku88", ""],
-["TP056", "Hugo", "hugokotw", ""],
-["TP056", "阿地", "dion_s_noid", ""],
-["TP056", "Tama", "tamakingram0123", ""],
-["TP056", "Tony", "hsun855", ""],
-["TP057", "Marc Diocera", "@goodmarccc", ""],
-["TP058", "Lawrence", "lawrencechi", ""],
-["TP052", "Jared Hill", "Jaredh1ll", ""],
-["TP060", "Anders", "andersgan", ""],
-["TP060", "上野健一", "Buff3153", ""],
-["TP061", "小宇19", "xyu70666", ""],
-["TP062", "Zikai Meng", "@themonkeyraver", ""],
-["TP062", "Bowen Shu", "bowatchshoe", ""],
-["TP043", "柴柴", "chaichai_ezekiel", ""],
-["TP063", "Nelson Lai", "menergy999", ""],
-["TP063", "Mark Win", "m_aw_rk", ""],
-["TP012", "林百八", "lin.yukai2820_tw", ""],
-["TP012", "陳布魯", "blue760515", ""],
-["TP064", "Rayo", "Wolfrayo", ""],
-["TP064", "焦蕉", "Foritzbanana", ""],
-["TP002", "Jin", "_jinzai_", ""],
-["TP003", "Yusuke Hashizume", "@yhz.jp", ""],
-["TP003", "Hiromasa Ando", "Ando.hiromasa", ""],
-["TP004", "Titan0103", "Titan0103", ""],
-["TP005", "Mitsuru", "mahmah9920", ""],
-["TP005", "Hiroyuki", "hiro.yuki.3", ""],
-["TP005", "Daisuke", "daisuke.0328", ""],
-["TP005", "Kento", "kento_8969", ""],
-["TP005", "Yu", "yuuuuu.__.u", ""],
-["TP005", "Yuki", "dora_17972", ""],
-["TP005", "Gyopi", "syy3068n", ""],
-["TP005", "Yusaku", "39_3q", ""],
-["912049596", "毛大", "amaoboss", ""],
-["912049596", "Ryan", "mengmeng_0412", ""],
-["TP007", "jason_xu", "jasonxutw", ""],
-["TP007", "多多", "amis_zorn1995", ""],
-["TP007", "Terry", "terryli0102", ""],
-["TP007", "Yi Hsuan Cheng", "yhsmile79", ""],
-["TP007", "亞倫", "aaronlee0330", ""],
-["TP007", "任偉", "386cliff", ""],
-["TP012", "大白", "konwe615", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP058", "CHICHI", "lawrencechi", ""],
-["TP007", "多濃", "dom_aqr", ""],
-["TP008", "Yamashige", "yama_shige_", ""],
-["TP008", "Shu", "s_h_u0723", ""],
-["TP071", "John", "bonobook8", ""],
-["TP071", "Ryan", "sillysquidninja", ""],
-["TP012", "次次", "oozakiisaogmailcom", ""],
-["TP089", "Ronald", "@ronaldau98", ""],
-["TP089", "Nic leo", "nicholuffy", ""],
-["TP090", "TJ", "@hdjoker7", ""],
-["TP091", "Sean Wang", "sheepsheepking", ""],
-["TP091", "陈可勋", "ko_hsun", ""],
-["TP092", "Liu Sining", "@invisibles640", ""],
-["TP092", "Tyler Ong", "tylerhappysglife", ""],
-["TP093", "土屋伸一郎", "@shintaroo_taisa", ""],
-["TP094", "박진서", "@jins_kr00", ""],
-["TP094", "김태웅", "teddy90_kr", ""],
-["TP095", "Will Chen", "@henryyehenry", ""],
-["TP095", "Henry Yeh", "@henryyehenry", ""],
-["TP097", "Victor小良", "Victor811118", ""],
-["TP097", "Ollie歐里", "Victor811118", ""],
-["TP098", "陳韋翰", "@hardywooolf", ""],
-["TP098", "林禹丞", "@stevenlin149", ""],
-["TP099", "Diogo Alcantara", "diogoalcan", ""],
-["TP099", "Fabio Caracho Batista", "fabiocaracho", ""],
-["TP100", "Shota lino", "@shota_tao", ""],
-["TP100", "Go Matsumoto", "@go_go_ir", ""],
-["TP102", "yuta", "@y_tr_9", ""],
-["TP102", "youwen", "byyouwen", ""],
-["TP103", "小軍", "@eric19791218", ""],
-["TP103", "小派", "@patricliu_tw", ""],
-["TP103", "Mingku(Eric)", "@ku_mingku", ""],
-["TP103", "Dexter", "@dexterkim_kr", ""],
-["TP104", "Zack Tseng", "@zacktseng", ""],
-["TP104", "Kenneth Yu", "@kkyy425", ""],
-["TP105", "King Leung", "Scruffy.Asian", ""],
-["TP105", "Blue Sin", "bulublues", ""],
-["TP106", "Taufik", "@taufikbm", ""],
-["TP106", "Gandi", "@_aa_gandi", ""],
-["TP106", "Reynald", "@rynldkrt", ""],
-["TP107", "Jason Huang", "@hzkjason", ""],
-["TP107", "ARiffin Hiew", "@riffinhiew", ""],
-["TP108", "Henry", "henryng22", ""],
-["TP109", "閉鼠幫", "@chenpuchou", ""],
-["TP109", "小琦", "@petitechi520", ""],
-["TP110", "Keisuke", "@keisukee.jp", ""],
-["TP111", "AZUMA", "@benibenibayashi", ""],
-["TP111", "SATO", "@k.sato.s", ""],
-["TP111", "TOMO", "@niku_yasai", ""],
-["TP111", "KEISUKE", "@keu_3s", ""],
-["TP111", "MON", "@motoki_mon", ""],
-["TP111", "TAKAHASHI", "@us_tsunobue", ""],
-["TP112", "派特", "Paita8008", ""],
-["TP112", "Open", "Open888820", ""],
-["TP113", "Sheng Liu", "@ysliu16", ""],
-["TP113", "Johnson", "@johnson_tangys", ""],
-["TP114", "Ricky", "rickykun17", ""],
-["TP114", "Shouko", "tony.owl", ""],
-["TP114", "James", "James.kuen", ""],
-["TP114", "First", "firsttimee", ""],
-["TP050", "Frank", "stalkerforever6699", ""],
-["TP050", "Bao", "breadwyc", ""],
-["TP115", "Chamberlain Chang", "Creaayumi", ""],
-["TP007", "Hank", "henrik.city", ""],
-["TP007", "jim", "jimterk", ""],
-["TP116", "Frederick Ee", "fredisadoctor", ""],
-["TP116", "Matthew Lou", "Hunkywolf", ""],
-["TP055", "Nolan Xu", "Nolanxjf", ""],
-["TP055", "Nutty", "Ailuropoda_wk", ""],
-["TP117", "Jacob", "Jacob_nammers", ""],
-["TP118", "阿翰", "@scofie_chen", ""],
-["TP119", "Nicholas Delgrego", "@nickmatized", ""],
-["TP120", "Dennis Mendoza", "@dennistmp", ""],
-["TP061", "小宇1", "xyu70666", ""],
-["TP061", "小宇2", "xyu70666", ""],
-["TP061", "小宇3", "xyu70666", ""],
-["TP061", "小宇4", "xyu70666", ""],
-["TP061", "小宇5", "xyu70666", ""],
-["TP061", "小宇6", "xyu70666", ""],
-["TP061", "小宇7", "xyu70666", ""],
-["TP061", "小宇8", "xyu70666", ""],
-["TP061", "小宇9", "xyu70666", ""],
-["TP061", "小宇10", "xyu70666", ""],
-["TP061", "小宇11", "xyu70666", ""],
-["TP061", "小宇12", "xyu70666", ""],
-["TP061", "小宇13", "xyu70666", ""],
-["TP061", "小宇14", "xyu70666", ""],
-["TP061", "小宇15", "xyu70666", ""],
-["TP061", "小宇16", "xyu70666", ""],
-["TP061", "小宇17", "xyu70666", ""],
-["TP061", "小宇18", "xyu70666", ""],
-["TP061", "小宇", "xyu70666", ""],
-["TP061", "小宇20", "xyu70666", ""],
-["TP061", "小宇21", "xyu70666", ""],
-["TP121", "Moshin TAKAMATSU", "@moshin0527", ""],
-["TP122", "Sai", "@saitokyosays", ""],
-["TP123", "MAKOTO SASOH", "@makostagram.ig.jp", ""],
-["TP123", "TAKAO SASOH", "@tetsutetsutestutestu", ""],
-["TP123", "KAJIWARA KANAO", "@kanao_silver", ""],
-["TP123", "SHOHEI HASHIMOTO", "@tanotter", ""],
-["TP124", "FUI", "@tiger_and_dragon_88", ""],
-["TP124", "Shogo", "@sho_gofk", ""],
-["TP124", "Ryusei", "@ryu_seii14", ""],
-["TP124", "HIROSHI", "@landmark_jpn", ""],
-["TP124", "HIDEAKI", "@hideakih7", ""],
-["TP124", "MINORU", "@misukejp", ""],
-["TP125", "John", "@linjohn987", ""],
-["TP125", "Daniel", "@beefybeartw", ""],
-["TP126", "Ken liu", "Kenlovetravel", ""],
-["TP126", "Tony yu", "Tonyyu0605", ""],
-["TP007", "keeganfff", "阿根", ""],
-["TP127", "李宗諭", "@aaronlee03308851", ""],
-["TP128", "GoN", "@gon5n", ""],
-["TP128", "Gold", "@goldstronghold", ""],
-["TP128", "Yohei", "@midnitecruising", ""],
-["TP128", "Satoshi", "@Sad_toshi", ""],
-["TP128", "Junya", "@jun_yaaaaa", ""],
-["TP129", "yuho", "tkmr_jp", ""],
-["TP129", "wataru", "wataru_peso", ""],
-["TP098", "鄭元嘉", "henry999111", ""],
-["TP130", "Norman", "@normanyen", ""],
-["TP130", "Pony", "Po_ny", ""],
-["TP131", "JUNPEI", "@ziyun1992", ""],
-["TP132", "Tagon", "@goongon27", ""],
-["TP133", "Kukeu", "@kukeu997", ""],
-["TP134", "blaine", "@61aine", ""],
-["TP135", "Zay Latt", "just_zay_sf", ""],
-["TP136", "阿徹", "acheache86", ""],
-["TP136", "輒胖", "_._.zhepom._._", ""],
-["TP136", "Timmy", "__timmys33187", ""],
-["TP050", "Jason", "jaja_son94", ""],
-["TP063", "Andre", "andre_ooyee", ""],
-["TP137", "Chris Zhang", "@bordeauxbowtie", ""],
-["TP138", "Kaptan Jungteerapanich", "@kaptajn", ""],
-["TP137", "Keishi", "@g_ba_yo", ""],
-["TP137", "Posho", "@posho_______", ""],
-["TP137", "Ben", "@benny_and_theworld", ""],
-["TP140", "Leo Chang", "@leocsscoel", ""],
-["TP141", "Ryo(6)", "@kumoxkumo", ""],
-["TP141", "DIN", "din.co.kr", ""],
-["TP142", "屏", "siouxiyang", ""],
-["TP143", "Gombo Chuluun", "gombo_12", ""],
-["TP144", "Saru", "@jpsaru", ""],
-["TP055", "Hao", "Frieren_hao0208", ""],
-["TP145", "城城", "@f_ilbsine", ""],
-["TP146", "Simon", "@Romeo.On.The.Rocks", ""],
-["TP043", "超超", "booserboo", ""],
-["TP147", "班尼", "Bennylu621229", ""],
-["TP147", "小寶", "Tata0204", ""],
-["TP148", "Daniel Jiang", "danieljiangishere", ""],
-["TP148", "Daniel Simmons", "dannysimmons", ""],
-["TP148", "Chin Tay", "chinttay", ""],
-["TP149", "Alex Pryor", "@_pryorities", ""],
-["TP150", "Hwaney", "@hwaney_hwan", ""],
-["TP151", "June", "June_lai", ""],
-["TP151", "Herry", "Herry G", ""],
-["TP152", "Tony Nguyen", "tony_tiiger", ""],
-["TP152", "Ausking shi", "Ausking", ""],
-["TP153", "Leo", "One_punch_leo", ""],
-["TP154", "子昊", "Zihowsong", ""],
-["TP154", "小高", "Zihowsong", ""],
-["TP154", "Hank", "Zihowsong", ""],
-["TP154", "阿䀚", "Zihowsong", ""],
-["TP154", "阿豪", "Zihowsong", ""],
-["TP155", "Bogie", "@bogie_drj", ""],
-["TP134", "allen", "allen.0729", ""],
-["TP003", "Fumiya", "fumiyaaa86", ""],
-["TP156", "Ken 廖", "@K3nith__", ""],
-["TP156", "小虎", "無", ""],
-["TP157", "Christopher Lowy", "@clowy01", ""],
-["TP157", "Hu Hang", "foxhound430", ""],
-["TP157", "Quoc Truong", "quoct91", ""],
-["TP158", "白王", "@白王", ""],
-["TP159", "Hui Zhao", "darrenzhaoau", ""],
-["TP159", "Hayden Wang", "hayden_h_aus", ""],
-["TP159", "Peter Wong", "ggwp.au", ""],
-["TP159", "Michael Jansen", "mickj1969", ""],
-["TP160", "陳家偉", "@philosophy26", ""],
-["TP161", "Amber", "Amber_Liou", ""],
-["TP162", "小夫", "@vanif", ""],
-["TP163", "董佳豪", "@hwafrank", ""],
-["TP164", "林洲宏", "@moumou_chou", ""],
-["TP164", "顧書炫", "@shushuanku", ""],
-["TP165", "Hanes Liu", "Henryliujjv", ""],
-["TP166", "張惟鈞", "@johnsonmcqueen", ""],
-["TP167", "小虎", "@tigerlee", ""],
-["TP167", "阿信", "N", ""],
-["TP167", "Eric 胖熊", "無", ""],
-["TP167", "小賢", "無", ""],
-["TP168", "Anh Truong", "@flynnrubberboy1", ""],
-["TP169", "Kyle Waide Shoemaker", "kwshoe", ""],
-["TP169", "Anthony", "anthonyip", ""],
-["TP170", "Minki An", "@mkchiang_94", ""],
-["TP170", "Suhwan Kim", "@sanxxhi", ""],
-["TP170", "Sangmin Moon", "@mkchiang_94", ""],
-["TP170", "Shinyik Yoo", "@mooniks14", ""],
-["TP171", "Tyson Wang", "tyson.1119", ""],
-["TP172", "Kun", "oohihilala", ""],
-["TP173", "Zakk Roberts", "@midkay90", ""],
-["TP174", "Peter (Zhe Wei) Zhang", "zhangermeister", ""],
-["TP174", "Jorge Medina", "horchatawithboba", ""],
-["TP175", "Takanori Kimura", "norinorio8o2", ""],
-["TP176", "ryan_or_hiroshi", "ryan_or_hiroshi", ""],
-["TP177", "Dorz Cheung", "Dorism", ""],
-["TP177", "Mike", "mike_wonggggg", ""],
-["TP177", "Stella", "stellayukisiu", ""],
-["TP177", "Tim", "tim_psa_", ""],
-["TP178", "Nick Chan", "@sunnsnnn", ""],
-["TP179", "Hongseok lee", "Hanseo_199x", ""],
-["TP179", "Dongju lee", "Seoulzzoo", ""],
-["TP180", "Chok", "thanachok", ""],
-["TP180", "Kazu", "sht_kazu", ""],
-["TP181", "Justin Tien", "Justinean07", ""],
-["TP181", "Johnny Nguyen", "Johnnynguyenesq", ""],
-["TP181", "Lucas ong", "Lukas_korgi_bb", ""],
-["TP043", "Benjamin Liang", "swyguh", ""],
-["TP043", "Brian Navarro", "Bnavarro77", ""],
-["TP182", "Dawson", "Liu_daws", ""],
-["TP182", "鵬鵬", "https://www.instagram.com/_moon_moon_bird_?cplk=ajVzNjl3MzFpajIz", ""],
-["TP182", "西瓜", "https://www.instagram.com/cjchen0225?rpxt=MW1tZnJpbWJjZWtieQ==", ""],
-["TP182", "Brian", "https://www.instagram.com/kcpoe?vrfl=MWZlcnRteGFwNnVjZA==", ""],
-["TP182", "Tiger", "https://www.instagram.com/tigervove?psln=MWw0OTB3eGlhMTB2bg==", ""],
-["TP182", "Xiaoyu", "https://www.instagram.com/xyu70666?psln=MWhrandwbm4wZXd4Yg==", ""],
-["TP182", "Hydo", "https://www.instagram.com/hydo_8898?mdxt=czM1azl6dGE5Z2Z6", ""],
-["TP183", "許小寶", "@sam_hsu0507", ""],
-["TP183", "熊寶", "@linxiongbaobao", ""],
-["TP183", "Kyle", "@earchiu", ""],
-["TP182", "阿生", "https://www.instagram.com/jsheng_322?obrf=MW11MnBjYWlyeHp6MA==", ""],
-["TP159", "Rui Yuan Chen", "yuanyuan851116", ""],
-["TP184", "Mike", "@mikey__travels", ""],
-["TP184", "Mark", "@dryad3333", ""],
-["TP184", "Ken", "@super_kenkenken", ""],
-["TP185", "詹耀德", "@iamryanzhan", ""],
-["TP186", "Jon Tsung", "@jonorjh", ""],
-["TP186", "Alan Chien", "hl_chien", ""],
-["TP045", "品智", "pin_zhi_76", ""],
-["TP187", "Francesc Caballero", "@physikero", ""],
-["TP187", "Daniel Ferreira", "@dnfrb", ""],
-["TP188", "洪昇鋒", "whoomark", ""],
-["TP189", "Ryan Wu", "@Ryanwu.86", ""],
-["TP190", "外山雄太", "@yu___tt00", ""],
-["TP191", "Stamina Kim", "@stamina_gay_travel", ""],
-["TP145", "阿碩", "@zonapha", ""],
-["TP192", "Travis Tang", "i8_tartare", ""],
-["TP111", "HSUN", "@hsun_tw_986", ""],
-["TP137", "Jason", "Jason2.18", ""],
-["TP193", "Johnny Pham", "Johnpham", ""],
-["TP194", "Taka", "https://www.instagram.com/09652_?vrfl=cXhjbzRieWVmbDZh", ""],
-["TP177", "Kenny", "kennyhk28", ""],
-["TP195", "Alfred Cheung", "alfredstravelworld", ""],
-["TP195", "Roger", "zyhroger", ""],
-["TP154", "ryan", "ryan", ""],
-["TP154", "Vanness", "Vanness", ""]];
+/* 報名名單：一行一人 [桌號, 桌長, 姓名, 國籍, IG]。要改名單就改這裡，改完把 LIST_VER 換成新的日期，手機打開就會自動換成新名單。 */
+const LIST_VER="2026-10-29a";
+const LIST=[["1", "jaywong", "Gary Fong", "馬來西亞", "@garyfjt"],
+["1", "jaywong", "Aw Teck Woon", "新加坡", "@dashyboy"],
+["1", "jaywong", "Jacob", "香港", "@Jacob_nammers"],
+["1", "jaywong", "Garry Moss", "新加坡", "@huggabearsg"],
+["1", "jaywong", "Yew Eng Tee", "新加坡", "@ethillion"],
+["1", "jaywong", "Blue Sin", "香港", "@bulublues"],
+["1", "jaywong", "King Leung", "香港", "@Scruffy.Asian"],
+["1", "jaywong", "David Hioe", "新加坡", "@gummycubbie"],
+["1", "jaywong", "Tyler Ong", "馬來西亞", "@tylerhappysglife"],
+["1", "jaywong", "Liu Sining", "新加坡", "@invisibles640"],
+["2", "Hui Zhao", "AZUMA", "日本", "@benibenibayashi"],
+["2", "Hui Zhao", "SATO", "日本", "@k.sato.s"],
+["2", "Hui Zhao", "TOMO", "日本", "@niku_yasai"],
+["2", "Hui Zhao", "KEISUKE", "日本", "@keu_3s"],
+["2", "Hui Zhao", "MON", "日本", "@motoki_mon"],
+["2", "Hui Zhao", "TAKAHASHI", "日本", "@us_tsunobue"],
+["2", "Hui Zhao", "Mike", "菲律賓", "@mikey__travels"],
+["2", "Hui Zhao", "Ken", "菲律賓", "@super_kenkenken"],
+["2", "Hui Zhao", "Mark", "台灣", "@dryad3333"],
+["2", "Hui Zhao", "HSUN", "台灣", "@hsun_tw_986"],
+["3", "Titan0103", "Peter (Zhe Wei) Zhang", "加拿大", "@zhangermeister"],
+["3", "Titan0103", "Jorge Medina", "英國", "@horchatawithboba"],
+["3", "Titan0103", "Ronald", "馬來西亞", "@ronaldau98"],
+["3", "Titan0103", "Nic leo", "馬來西亞", "@nicholuffy"],
+["3", "Titan0103", "Dave Milford", "加拿大", "@Seadave12"],
+["3", "Titan0103", "Orrin Brown", "美國", "@seadakine808"],
+["3", "Titan0103", "Anthony", "美國", "@anthonyip"],
+["3", "Titan0103", "Kyle Waide Shoemaker", "美國", "@kwshoe"],
+["3", "Titan0103", "Simon", "德國", "@Romeo.On.The.Rocks"],
+["3", "Titan0103", "Bogie", "蒙古", "@bogie_drj"],
+["4", "黃信瑋", "Zakk Roberts", "美國", "@midkay90"],
+["4", "黃信瑋", "詹耀德", "台灣", "@iamryanzhan"],
+["4", "黃信瑋", "超超", "美國", "@booserboo"],
+["4", "黃信瑋", "王楠", "中國", "@mrmetamorphosis"],
+["4", "黃信瑋", "Brian Navarro", "美國", "@Bnavarro77"],
+["4", "黃信瑋", "Xintong Li", "美國", "@xintong_li"],
+["4", "黃信瑋", "柴柴", "美國", "@chaichai_ezekiel"],
+["4", "黃信瑋", "Kenny Tsai", "美國", "@kennychiwa"],
+["4", "黃信瑋", "Benjamin Liang", "美國", "@swyguh"],
+["4", "黃信瑋", "Gombo Chuluun", "蒙古", "@gombo_12"],
+["5", "blaine", "Bao", "香港", "@breadwyc"],
+["5", "blaine", "Adam", "香港", "@ebear.hk"],
+["5", "blaine", "Jason", "香港", "@jaja_son94"],
+["5", "blaine", "Frank", "香港", "@stalkerforever6699"],
+["5", "blaine", "Dorz Cheung", "香港", "@Dorism"],
+["5", "blaine", "Mike", "香港", "@mike_wonggggg"],
+["5", "blaine", "Stella", "香港", "@stellayukisiu"],
+["5", "blaine", "Tim", "香港", "@tim_psa_"],
+["5", "blaine", "Kenny", "香港", "@kennyhk28"],
+["5", "blaine", "Anh Truong", "越南", "@flynnrubberboy1"],
+["6", "Jayden", "Moshin TAKAMATSU", "日本", "@moshin0527"],
+["6", "Jayden", "TAKAO SASOH", "日本", "@tetsutetsutestutestu"],
+["6", "Jayden", "KAJIWARA KANAO", "日本", "@kanao_silver"],
+["6", "Jayden", "SHOHEI HASHIMOTO", "日本", "@tanotter"],
+["6", "Jayden", "MAKOTO SASOH", "日本", "@makostagram.ig.jp"],
+["6", "Jayden", "Shota lino", "日本", "@shota_tao"],
+["6", "Jayden", "Go Matsumoto", "日本", "@go_go_ir"],
+["6", "Jayden", "Ryo(6)", "日本", "@kumoxkumo"],
+["6", "Jayden", "DIN", "韓國", "@din.co.kr"],
+["6", "Jayden", "Shotaro", "日本", "@shotaro_13"],
+["8", "Dawson", "Mark Win", "新加坡", "@m_aw_rk"],
+["8", "Dawson", "Nelson Lai", "新加坡", "@menergy999"],
+["8", "Dawson", "Andre", "台灣", "@andre_ooyee"],
+["8", "Dawson", "Leo Chang", "台灣", "@leocsscoel"],
+["8", "Dawson", "Matthew Lou", "新加坡", "@Hunkywolf"],
+["8", "Dawson", "Frederick Ee", "新加坡", "@fredisadoctor"],
+["8", "Dawson", "Taufik", "印尼", "@taufikbm"],
+["8", "Dawson", "Gandi", "印尼", "@_aa_gandi"],
+["8", "Dawson", "Reynald", "印尼", "@rynldkrt"],
+["8", "Dawson", "Chamberlain Chang", "新加坡", "@Creaayumi"],
+["9", "小宇19", "Zak", "澳洲", "@6688kaz"],
+["9", "小宇19", "Steven", "澳洲", "@没有"],
+["9", "小宇19", "Anders", "台灣", "@andersgan"],
+["9", "小宇19", "上野健一", "台灣", "@Buff3153"],
+["9", "小宇19", "Leo", "澳洲", "@One_punch_leo"],
+["9", "小宇19", "Fabio Cigana", "澳洲", "@fabio.cigana"],
+["9", "小宇19", "Shayne Hsu", "台灣", "@shayno887"],
+["9", "小宇19", "Marc Diocera", "澳洲", "@goodmarccc"],
+["9", "小宇19", "Dennis Mendoza", "澳洲", "@dennistmp"],
+["9", "小宇19", "TJ", "美國", "@hdjoker7"],
+["10", "小宇11", "Lawrence", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["10", "小宇11", "CHICHI", "台灣", "@lawrencechi"],
+["11", "許小寶", "許小寶", "台灣", "@sam_hsu0507"],
+["11", "許小寶", "熊寶", "台灣", "@linxiongbaobao"],
+["11", "許小寶", "Ken liu", "台灣", "@Kenlovetravel"],
+["11", "許小寶", "Tony yu", "台灣", "@Tonyyu0605"],
+["11", "許小寶", "小夫", "台灣", "@vanif"],
+["11", "許小寶", "Kyle", "台灣", "@earchiu"],
+["11", "許小寶", "張惟鈞", "台灣", "@johnsonmcqueen"],
+["11", "許小寶", "youwen", "中國", "@byyouwen"],
+["11", "許小寶", "yuta", "日本", "@y_tr_9"],
+["11", "許小寶", "Kun", "台灣", "@oohihilala"],
+["12", "Peter (Zhe Wei) Zhang", "Hongseok lee", "韓國", "@Hanseo_199x"],
+["12", "Peter (Zhe Wei) Zhang", "Dongju lee", "韓國", "@Seoulzzoo"],
+["12", "Peter (Zhe Wei) Zhang", "Jon Tsung", "荷蘭", "@jonorjh"],
+["12", "Peter (Zhe Wei) Zhang", "Alan Chien", "台灣", "@hl_chien"],
+["12", "Peter (Zhe Wei) Zhang", "Kazu", "日本", "@sht_kazu"],
+["12", "Peter (Zhe Wei) Zhang", "Chok", "泰國", "@thanachok"],
+["12", "Peter (Zhe Wei) Zhang", "Minki An", "韓國", "@mkchiang_94"],
+["12", "Peter (Zhe Wei) Zhang", "Suhwan Kim", "韓國", "@sanxxhi"],
+["12", "Peter (Zhe Wei) Zhang", "Sangmin Moon", "韓國", "@mkchiang_94"],
+["12", "Peter (Zhe Wei) Zhang", "Shinyik Yoo", "韓國", "@mooniks14"],
+["14", "HIDEAKI", "HIDEAKI", "日本", "@hideakih7"],
+["14", "HIDEAKI", "FUI", "日本", "@tiger_and_dragon_88"],
+["14", "HIDEAKI", "Shogo", "日本", "@sho_gofk"],
+["14", "HIDEAKI", "Ryusei", "日本", "@ryu_seii14"],
+["14", "HIDEAKI", "HIROSHI", "日本", "@landmark_jpn"],
+["14", "HIDEAKI", "MINORU", "日本", "@misukejp"],
+["14", "HIDEAKI", "Tagon", "日本", "@goongon27"],
+["14", "HIDEAKI", "JUNPEI", "日本", "@ziyun1992"],
+["15", "Nolan Xu", "Dawson", "台灣", "@Liu_daws"],
+["15", "Nolan Xu", "阿生", "台灣", "@https://www.instagram.com/jsheng_322?obrf=MW11MnBjYWlyeHp6MA=="],
+["15", "Nolan Xu", "鵬鵬", "台灣", "@https://www.instagram.com/_moon_moon_bird_?cplk=ajVzNjl3MzFpajIz"],
+["15", "Nolan Xu", "西瓜", "台灣", "@https://www.instagram.com/cjchen0225?rpxt=MW1tZnJpbWJjZWtieQ=="],
+["15", "Nolan Xu", "Brian", "台灣", "@https://www.instagram.com/kcpoe?vrfl=MWZlcnRteGFwNnVjZA=="],
+["15", "Nolan Xu", "Tiger", "台灣", "@https://www.instagram.com/tigervove?psln=MWw0OTB3eGlhMTB2bg=="],
+["15", "Nolan Xu", "Xiaoyu", "台灣", "@https://www.instagram.com/xyu70666?psln=MWhrandwbm4wZXd4Yg=="],
+["15", "Nolan Xu", "Hydo", "台灣", "@https://www.instagram.com/hydo_8898?mdxt=czM1azl6dGE5Z2Z6"],
+["15", "Nolan Xu", "小宇21", "台灣", "@xyu70666"],
+["15", "Nolan Xu", "小宇20", "台灣", "@xyu70666"],
+["16", "包子", "毛大", "台灣", "@amaoboss"],
+["16", "包子", "Ryan", "台灣", "@mengmeng_0412"],
+["16", "包子", "洪昇鋒", "台灣", "@whoomark"],
+["16", "包子", "Ryan Wu", "台灣", "@Ryanwu.86"],
+["16", "包子", "阿徹", "台灣", "@acheache86"],
+["16", "包子", "Timmy", "台灣", "@__timmys33187"],
+["16", "包子", "輒胖", "台灣", "@_._.zhepom._._"],
+["16", "包子", "丹尼", "台灣", "@skyblue_danny"],
+["16", "包子", "玖哲", "台灣", "@gavinchen_tw"],
+["16", "包子", "傑瑞", "台灣", "@iamjerry.tw"],
+["17", "毛大", "Hank", "台灣", "@henrik.city"],
+["17", "毛大", "jim", "台灣", "@jimterk"],
+["17", "毛大", "jason_xu", "台灣", "@jasonxutw"],
+["17", "毛大", "多多", "台灣", "@amis_zorn1995"],
+["17", "毛大", "Terry", "台灣", "@terryli0102"],
+["17", "毛大", "Yi Hsuan Cheng", "台灣", "@yhsmile79"],
+["17", "毛大", "亞倫", "台灣", "@aaronlee0330"],
+["17", "毛大", "任偉", "台灣", "@386cliff"],
+["17", "毛大", "keeganfff", "台灣", "@阿根"],
+["17", "毛大", "多濃", "台灣", "@dom_aqr"],
+["18", "Chris Zhang", "Stamina Kim", "韓國", "@stamina_gay_travel"],
+["18", "Chris Zhang", "Alex Pryor", "韓國", "@_pryorities"],
+["18", "Chris Zhang", "Kukeu", "韓國", "@kukeu997"],
+["18", "Chris Zhang", "박진서", "韓國", "@jins_kr00"],
+["18", "Chris Zhang", "김태웅", "韓國", "@teddy90_kr"],
+["18", "Chris Zhang", "Hui Zhao", "澳洲", "@darrenzhaoau"],
+["18", "Chris Zhang", "Hayden Wang", "澳洲", "@hayden_h_aus"],
+["18", "Chris Zhang", "Peter Wong", "澳洲", "@ggwp.au"],
+["18", "Chris Zhang", "Michael Jansen", "澳洲", "@mickj1969"],
+["18", "Chris Zhang", "Rui Yuan Chen", "台灣", "@yuanyuan851116"],
+["19", "MAKOTO SASOH", "小宇1", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇2", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇3", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇4", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇19", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇5", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇6", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇7", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇8", "台灣", "@xyu70666"],
+["19", "MAKOTO SASOH", "小宇9", "台灣", "@xyu70666"],
+["20", "Kun", "Takanori Kimura", "日本", "@norinorio8o2"],
+["20", "Kun", "Mitsuru", "日本", "@mahmah9920"],
+["20", "Kun", "Hiroyuki", "日本", "@hiro.yuki.3"],
+["20", "Kun", "Daisuke", "日本", "@daisuke.0328"],
+["20", "Kun", "Kento", "日本", "@kento_8969"],
+["20", "Kun", "Yu", "日本", "@yuuuuu.__.u"],
+["20", "Kun", "Yuki", "日本", "@dora_17972"],
+["20", "Kun", "Gyopi", "日本", "@syy3068n"],
+["20", "Kun", "Yusaku", "日本", "@39_3q"],
+["20", "Kun", "Sai", "日本", "@saitokyosays"],
+["21", "Ken 廖", "小軍", "台灣", "@eric19791218"],
+["21", "Ken 廖", "Mingku(Eric)", "韓國", "@ku_mingku"],
+["21", "Ken 廖", "Dexter", "韓國", "@dexterkim_kr"],
+["21", "Ken 廖", "小派", "台灣", "@patricliu_tw"],
+["21", "Ken 廖", "Tyson Wang", "台灣", "@tyson.1119"],
+["21", "Ken 廖", "Victor小良", "台灣", "@Victor811118"],
+["21", "Ken 廖", "Ollie歐里", "台灣", "@Victor811118"],
+["21", "Ken 廖", "ryan_or_hiroshi", "日本", "@ryan_or_hiroshi"],
+["21", "Ken 廖", "yuho", "日本", "@tkmr_jp"],
+["21", "Ken 廖", "wataru", "日本", "@wataru_peso"],
+["23", "小宇14", "James", "香港", "@James.kuen"],
+["23", "小宇14", "Ricky", "日本", "@rickykun17"],
+["23", "小宇14", "Shouko", "日本", "@tony.owl"],
+["23", "小宇14", "First", "泰國", "@firsttimee"],
+["23", "小宇14", "Yamashige", "日本", "@yama_shige_"],
+["23", "小宇14", "Shu", "日本", "@s_h_u0723"],
+["23", "小宇14", "Saru", "日本", "@jpsaru"],
+["23", "小宇14", "Fumiya", "日本", "@fumiyaaa86"],
+["23", "小宇14", "Yusuke Hashizume", "日本", "@yhz.jp"],
+["23", "小宇14", "Hiromasa Ando", "日本", "@Ando.hiromasa"],
+["24", "小宇19（G092）", "小宇10", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇12", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇11", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇14", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇13", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇15", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇18", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇17", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇", "台灣", "@xyu70666"],
+["24", "小宇19（G092）", "小宇16", "台灣", "@xyu70666"],
+["25", "Alex Pryor", "小琦", "台灣", "@petitechi520"],
+["25", "Alex Pryor", "閉鼠幫", "台灣", "@chenpuchou"],
+["25", "Alex Pryor", "次次", "台灣", "@oozakiisaogmailcom"],
+["25", "Alex Pryor", "姜炳元", "台灣", "@okaeri1911"],
+["25", "Alex Pryor", "大白", "台灣", "@konwe615"],
+["25", "Alex Pryor", "林百八", "台灣", "@lin.yukai2820_tw"],
+["25", "Alex Pryor", "陳布魯", "台灣", "@blue760515"],
+["25", "Alex Pryor", "Zack Tseng", "台灣", "@zacktseng"],
+["25", "Alex Pryor", "Kenneth Yu", "台灣", "@kkyy425"],
+["25", "Alex Pryor", "董佳豪", "台灣", "@hwafrank"],
+["26", "Dave Milford", "Lucas ong", "馬來西亞", "@Lukas_korgi_bb"],
+["26", "Dave Milford", "Johnny Nguyen", "美國", "@Johnnynguyenesq"],
+["26", "Dave Milford", "Raymond Ballard", "澳洲", "@Plucka_1984"],
+["26", "Dave Milford", "Viet Bui", "澳洲", "@Vbui92"],
+["26", "Dave Milford", "Kyle Furuya", "菲律賓", "@magu_magumaaaa"],
+["26", "Dave Milford", "Jutton Robert", "英國", "@ messiaen333"],
+["26", "Dave Milford", "Justin Tien", "馬來西亞", "@Justinean07"],
+["26", "Dave Milford", "Leo Chen", "台灣", "@leochen.07"],
+["26", "Dave Milford", "土屋伸一郎", "日本", "@shintaroo_taisa"],
+["26", "Dave Milford", "Harris", "越南", "@harris.nyc"],
+["27", "AZUMA", "Chris Zhang", "美國", "@bordeauxbowtie"],
+["27", "AZUMA", "Keishi", "日本", "@g_ba_yo"],
+["27", "AZUMA", "Posho", "韓國", "@posho_______"],
+["27", "AZUMA", "Ben", "韓國", "@benny_and_theworld"],
+["27", "AZUMA", "Kaptan Jungteerapanich", "泰國", "@kaptajn"],
+["27", "AZUMA", "Randy", "印尼", "@randyreborn13"],
+["27", "AZUMA", "Titan0103", "台灣", "@Titan0103"],
+["27", "AZUMA", "jaywong", "馬來西亞", "@jaywong_1218"],
+["27", "AZUMA", "Xiaobill", "印尼", "@Xiaobill"],
+["27", "AZUMA", "Travis Tang", "中國", "@i8_tartare"],
+["27", "AZUMA", "Diogo Alcantara", "巴西", "@diogoalcan"],
+["27", "AZUMA", "Fabio Caracho Batista", "巴西", "@fabiocaracho"],
+["27", "AZUMA", "Jason", "新加坡", "@Jason2.18"],
+["28", "Tim Yip", "小虎", "台灣", "@tigerlee"],
+["28", "Tim Yip", "小賢", "台灣", "@無"],
+["28", "Tim Yip", "黑糖", "台灣", "@Siriuslee2002"],
+["28", "Tim Yip", "黃信瑋", "台灣", "@Newbearhere"],
+["28", "Tim Yip", "蔡博任", "台灣", "@zhaochengen3241"],
+["28", "Tim Yip", "楊嘉瑋", "台灣", "@yorkcubic"],
+["28", "Tim Yip", "林禹丞", "台灣", "@stevenlin149"],
+["28", "Tim Yip", "鄭元嘉", "台灣", "@henry999111"],
+["28", "Tim Yip", "陳韋翰", "台灣", "@hardywooolf"],
+["28", "Tim Yip", "Sean", "台灣", "@seanliu829"],
+["28", "Tim Yip", "Gerardo", "台灣", "@spacemanx2077"],
+["29", "CHICHI（@lawrencechi）", "Ma", "台灣", "@unknownxguy"],
+["29", "CHICHI（@lawrencechi）", "V", "台灣", "@2000"],
+["29", "CHICHI（@lawrencechi）", "麵麵", "台灣", "@mianhuang"],
+["29", "CHICHI（@lawrencechi）", "Norman", "台灣", "@normanyen"],
+["29", "CHICHI（@lawrencechi）", "Pony", "台灣", "@Po_ny"],
+["29", "CHICHI（@lawrencechi）", "開開", "台灣", "@rpenwow"],
+["29", "CHICHI（@lawrencechi）", "船船", "台灣", "@nickhuang28"],
+["29", "CHICHI（@lawrencechi）", "碰碰", "台灣", "@PonPonYeh"],
+["29", "CHICHI（@lawrencechi）", "Hanes Liu", "台灣", "@Henryliujjv"],
+["29", "CHICHI（@lawrencechi）", "Oscar", "台灣", "@Cool_oscar"],
+["30", "kopan", "Dae Young Kim", "韓國", "@navynl"],
+["30", "kopan", "Jayden", "韓國", "@j.dn___kr"],
+["30", "kopan", "Hiro", "韓國", "@Hiro85_kr"],
+["30", "kopan", "Logan", "韓國", "@Logan___kim___"],
+["30", "kopan", "QQ", "韓國", "@q__q94"],
+["30", "kopan", "Jun", "韓國", "@junstify"],
+["30", "kopan", "blaine", "韓國", "@61aine"],
+["30", "kopan", "allen", "韓國", "@allen.0729"],
+["30", "kopan", "Will Chen", "台灣", "@henryyehenry"],
+["30", "kopan", "Henry Yeh", "台灣", "@henryyehenry"],
+["31", "Zikai Meng", "Keisuke", "日本", "@keisukee.jp"],
+["31", "Zikai Meng", "Brent Baculi", "美國", "@thebacooliest"],
+["31", "Zikai Meng", "Zay Latt", "美國", "@just_zay_sf"],
+["31", "Zikai Meng", "Kota", "美國", "@kohi78"],
+["31", "Zikai Meng", "Jin", "馬來西亞", "@_jinzai_"],
+["31", "Zikai Meng", "Nicholas Delgrego", "日本", "@nickmatized"],
+["31", "Zikai Meng", "Daniel Jiang", "紐西蘭", "@danieljiangishere"],
+["31", "Zikai Meng", "Daniel Simmons", "紐西蘭", "@dannysimmons"],
+["31", "Zikai Meng", "Chin Tay", "紐西蘭", "@chinttay"],
+["31", "Zikai Meng", "Taka", "日本", "@https://www.instagram.com/09652_?vrfl=cXhjbzRieWVmbDZh"],
+["32", "小艾文", "小艾文", "台灣", "@friendalvin_tw"],
+["32", "小艾文", "品智", "台灣", "@pin_zhi_76"],
+["32", "小艾文", "Ken 廖", "台灣", "@K3nith__"],
+["32", "小艾文", "小虎", "台灣", "@無"],
+["32", "小艾文", "黃鈞鈞", "台灣", "@chunnywalker"],
+["32", "小艾文", "派特", "台灣", "@Paita8008"],
+["32", "小艾文", "Open", "台灣", "@Open888820"],
+["32", "小艾文", "阿翰", "台灣", "@scofie_chen"],
+["32", "小艾文", "陳明彥", "台灣", "@mingyeng1978"],
+["32", "小艾文", "Neil", "台灣", "@djneilzo"],
+["33", "Sai", "Tommy Chen", "台灣", "@tommy13149"],
+["33", "Sai", "kopan", "中國", "@kopan_ex"],
+["33", "Sai", "Alfred Cheung", "香港", "@alfredstravelworld"],
+["33", "Sai", "Roger", "香港", "@zyhroger"],
+["33", "Sai", "Sheng Liu", "中國", "@ysliu16"],
+["33", "Sai", "Johnson", "香港", "@johnson_tangys"],
+["33", "Sai", "Benson", "中國", "@Beng2san4"],
+["33", "Sai", "Archer", "中國", "@NA"],
+["33", "Sai", "屏", "中國", "@siouxiyang"],
+["33", "Sai", "李宗諭", "台灣", "@aaronlee03308851"],
+["34", "Anders", "小高", "台灣", "@Zihowsong"],
+["34", "Anders", "Hank", "台灣", "@Zihowsong"],
+["34", "Anders", "阿䀚", "台灣", "@Zihowsong"],
+["34", "Anders", "阿豪", "台灣", "@Zihowsong"],
+["34", "Anders", "子昊", "台灣", "@Zihowsong"],
+["34", "Anders", "John", "美國", "@bonobook8"],
+["34", "Anders", "Ryan", "美國", "@sillysquidninja"],
+["34", "Anders", "白王", "美國", "@白王"],
+["34", "Anders", "Johnny Pham", "美國", "@Johnpham"],
+["34", "Anders", "ryan", "馬來西亞", "@ryan"],
+["34", "Anders", "Vanness", "馬來西亞", "@Vanness"],
+["35", "yuho", "June", "澳洲", "@June_lai"],
+["35", "yuho", "Herry", "澳洲", "@Herry G"],
+["35", "yuho", "Tony Nguyen", "澳洲", "@tony_tiiger"],
+["35", "yuho", "Ausking shi", "澳洲", "@Ausking"],
+["35", "yuho", "Jason Huang", "澳洲", "@hzkjason"],
+["35", "yuho", "ARiffin Hiew", "澳洲", "@riffinhiew"],
+["35", "yuho", "Henry", "越南", "@henryng22"],
+["35", "yuho", "Hwaney", "韓國", "@hwaney_hwan"],
+["35", "yuho", "Jack van Remmen", "澳洲", "@brother_jack"],
+["35", "yuho", "Nick Chan", "馬來西亞", "@sunnsnnn"],
+["36", "超超", "外山雄太", "日本", "@yu___tt00"],
+["36", "超超", "David Cuajunco", "菲律賓", "@Ultraslowbro"],
+["36", "超超", "John", "日本", "@linjohn987"],
+["36", "超超", "Daniel", "台灣", "@beefybeartw"],
+["36", "超超", "Hideaki", "日本", "@huskyhide0504"],
+["36", "超超", "GoN", "日本", "@gon5n"],
+["36", "超超", "Gold", "日本", "@goldstronghold"],
+["36", "超超", "Yohei", "日本", "@midnitecruising"],
+["36", "超超", "Satoshi", "日本", "@Sad_toshi"],
+["36", "超超", "Junya", "日本", "@jun_yaaaaa"],
+["37", "阿徹", "Hu Hang", "中國", "@foxhound430"],
+["37", "阿徹", "Christopher Lowy", "美國", "@clowy01"],
+["37", "阿徹", "Quoc Truong", "越南", "@quoct91"],
+["37", "阿徹", "Zikai Meng", "中國", "@themonkeyraver"],
+["37", "阿徹", "Bowen Shu", "中國", "@bowatchshoe"],
+["37", "阿徹", "Jared Hill", "美國", "@Jaredh1ll"],
+["37", "阿徹", "Sean Wang", "中國", "@sheepsheepking"],
+["37", "阿徹", "陈可勋", "台灣", "@ko_hsun"],
+["37", "阿徹", "Francesc Caballero", "西班牙", "@physikero"],
+["37", "阿徹", "Daniel Ferreira", "西班牙", "@dnfrb"],
+["38", "小軍", "Benny", "台灣", "@bennycho7"],
+["38", "小軍", "Owen", "台灣", "@owen_____huang"],
+["38", "小軍", "Weson Wu", "台灣", "@Weson_Wu"],
+["38", "小軍", "陳宇恆（阿亙）", "台灣", "@hallo.quantum"],
+["38", "小軍", "班尼", "台灣", "@Bennylu621229"],
+["38", "小軍", "小寶", "台灣", "@Tata0204"],
+["38", "小軍", "Amber", "台灣", "@Amber_Liou"],
+["38", "小軍", "陳家偉", "台灣", "@philosophy26"],
+["38", "小軍", "阿信", "台灣", "@N"],
+["38", "小軍", "Eric 胖熊", "台灣", "@無"],
+["39", "Blue Sin", "Arturo Cortes", "CL", "@chilean_traveller"],
+["39", "Blue Sin", "Nolan Xu", "新加坡", "@Nolanxjf"],
+["39", "Blue Sin", "Sam Chan", "香港", "@maullly"],
+["39", "Blue Sin", "Lim Boon Teck", "新加坡", "@bryan_limbt"],
+["39", "Blue Sin", "Randy Po", "新加坡", "@randypolyanna"],
+["39", "Blue Sin", "Rei Rei", "新加坡", "@reikumarei"],
+["39", "Blue Sin", "Tan Tong Wei (Luke)", "新加坡", "@reinaku88"],
+["39", "Blue Sin", "Nutty", "泰國", "@Ailuropoda_wk"],
+["39", "Blue Sin", "Hao", "台灣", "@Frieren_hao0208"],
+["39", "Blue Sin", "James Giannako", "美國", "@James_13D"],
+["40", "TAKAO SASOH", "Hugo", "台灣", "@hugokotw"],
+["40", "TAKAO SASOH", "阿地", "香港", "@dion_s_noid"],
+["40", "TAKAO SASOH", "Tama", "日本", "@tamakingram0123"],
+["40", "TAKAO SASOH", "Tony", "台灣", "@hsun855"],
+["40", "TAKAO SASOH", "Rayo", "台灣", "@Wolfrayo"],
+["40", "TAKAO SASOH", "焦蕉", "台灣", "@Foritzbanana"],
+["40", "TAKAO SASOH", "城城", "台灣", "@f_ilbsine"],
+["40", "TAKAO SASOH", "阿碩", "台灣", "@zonapha"],
+["40", "TAKAO SASOH", "林洲宏", "台灣", "@moumou_chou"],
+["40", "TAKAO SASOH", "顧書炫", "台灣", "@shushuanku"]];
 (function(){
 const $=s=>document.querySelector(s);
 const TAU=Math.PI*2;
@@ -720,27 +735,28 @@ const DEFAULT_OPTS=`喝一杯 | Take a Shot! | 1
 親一個人 | Kiss Someone | 1
 幸運得主 | Lucky Winner | 1`;
 const SAMPLE=[["小雨","rain_pride","台灣"],["Kevin","kevin.tw","台灣"],["阿翔","shiang_0831","台灣"],["Mia","mia.rainbow","日本"],["Yuki","yuki.dances","日本"],["Jordan","jordan_tpe","美國"],["Sam","sam_is_here","美國"],["Leo","leo_in_taipei","香港"]];
-/* 國籍對照：[中文, English, 其他寫法...] */
-const NAT=[["台灣","Taiwan","tw","taiwan","taiwanese","臺灣","roc"],["日本","Japan","jp","japan","japanese"],["韓國","Korea","kr","korea","south korea","korean","南韓"],["香港","Hong Kong","hk","hongkong","hong kong"],["澳門","Macau","macao","macau"],["中國","China","cn","china","chinese","中國大陸","大陸"],["新加坡","Singapore","sg","singapore"],["馬來西亞","Malaysia","my","malaysia","大馬"],["泰國","Thailand","th","thailand","thai"],["菲律賓","Philippines","ph","philippines","filipino"],["越南","Vietnam","vn","vietnam","viet nam"],["印尼","Indonesia","indonesia"],["印度","India","india"],["美國","USA","us","usa","united states","america","american"],["加拿大","Canada","ca","canada"],["英國","UK","uk","gb","united kingdom","britain","england","british"],["法國","France","fr","france","french"],["德國","Germany","de","germany","german"],["荷蘭","Netherlands","nl","netherlands","holland","dutch"],["西班牙","Spain","es","spain"],["義大利","Italy","italy","意大利"],["澳洲","Australia","au","australia","澳大利亞"],["紐西蘭","New Zealand","nz","new zealand"],["墨西哥","Mexico","mx","mexico"],["巴西","Brazil","br","brazil"]];
+/* 國籍對照：[中文, English, 國碼, 其他寫法...] */
+const NAT=[["台灣","Taiwan","TW","taiwan","taiwanese","臺灣","roc"],["日本","Japan","JP","japan","japanese"],["韓國","Korea","KR","korea","south korea","korean","南韓"],["香港","Hong Kong","HK","hongkong","hong kong"],["澳門","Macau","MO","macao","macau"],["中國","China","CN","china","chinese","中國大陸","大陸"],["新加坡","Singapore","SG","singapore"],["馬來西亞","Malaysia","MY","malaysia","大馬"],["泰國","Thailand","TH","thailand","thai"],["菲律賓","Philippines","PH","philippines","filipino"],["越南","Vietnam","VN","vietnam","viet nam"],["印尼","Indonesia","ID","indonesia"],["印度","India","IN","india"],["蒙古","Mongolia","MN","mongolia"],["美國","USA","US","usa","united states","america","american"],["加拿大","Canada","CA","canada"],["墨西哥","Mexico","MX","mexico"],["巴西","Brazil","BR","brazil"],["智利","Chile","CL","chile","chilean"],["阿根廷","Argentina","AR","argentina"],["英國","UK","GB","uk","united kingdom","britain","england","british"],["法國","France","FR","france","french"],["德國","Germany","DE","germany","german"],["荷蘭","Netherlands","NL","netherlands","holland","dutch"],["西班牙","Spain","ES","spain"],["義大利","Italy","IT","italy","意大利"],["澳洲","Australia","AU","australia","澳大利亞"],["紐西蘭","New Zealand","NZ","new zealand"]];
 const NATMAP=new Map();NAT.forEach(e=>{e.forEach(a=>NATMAP.set(a.toLowerCase(),e))});
 function natNorm(v){const s=String(v==null?"":v).trim();if(!s||/^(無|未填|none|n\/a|-)$/i.test(s))return "";const e=NATMAP.get(s.toLowerCase());return e?e[0]:s}
-function natInfo(k){const e=NATMAP.get(String(k).toLowerCase());return e?{zh:e[0],en:e[1]}:{zh:/[^\x00-\x7f]/.test(k)?k:"",en:k}}
+const flagOf=iso=>iso&&/^[A-Z]{2}$/.test(iso)?String.fromCodePoint(...[...iso].map(c=>0x1F1E6+c.charCodeAt(0)-65)):"";
+function natInfo(k){k=String(k||"");const e=NATMAP.get(k.toLowerCase());return e?{zh:e[0],en:e[1],flag:flagOf(e[2])}:{zh:/[^\x00-\x7f]/.test(k)?k:"",en:k,flag:""}}
 
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
-let people=[],pool=[],winners=[],opts=[],segs=[],natGroups=[],isSample=false,pending=null,lastAddedId=null;
-let mode=store.get("pd_mode","task")==="nat"?"nat":"task";
+let people=[],pool=[],winners=[],opts=[],segs=[],natGroups=[],tableGroups=[],isSample=false,pending=null,lastAddedId=null;
+let mode=["task","nat","table"].includes(store.get("pd_mode","task"))?store.get("pd_mode","task"):"task";
 let rotation=0,spinning=false,sound=store.get("pd_sound","1")==="1";
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ---------- parsing ---------- */
 function cleanIg(v){
   let s=String(v==null?"":v).trim();
-  if(/^(無|没有|沒有|none|n\/a|na|-|—|x)$/i.test(s))return "";
-  return s.replace(/^https?:\/\/(www\.)?instagram\.com\//i,"").replace(/[\/?#].*$/,"").replace(/^@+/,"").trim();
+  s=s.replace(/^@+/,"").trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i,"").replace(/[\/?#].*$/,"").replace(/^@+/,"").trim();
+  return /^(無|没有|沒有|none|n\/a|na|-|—|x)$/i.test(s)?"":s;
 }
-function person(name,ig,no,nat){return {id:uid(),name:String(name).trim(),ig:cleanIg(ig),no:no==null?"":String(no).trim(),nat:natNorm(nat)}}
+function person(name,ig,no,nat,table,cap){return {id:uid(),name:String(name).trim(),ig:cleanIg(ig),no:no==null?"":String(no).trim(),nat:natNorm(nat),table:table==null?"":String(table).trim(),cap:cap==null?"":String(cap).trim()}}
 function fromRows(rows){
   rows=rows.filter(r=>r&&r.some(c=>c!=null&&String(c).trim()!==""));
   if(!rows.length)return {list:[],skipped:0};
@@ -748,16 +764,17 @@ function fromRows(rows){
   const find=(...res)=>{for(const re of res){const i=h.findIndex(x=>re.test(x));if(i>=0)return i}return -1};
   let iName=find(/^(姓名|名字|名稱|暱稱|name|nickname)$/i,/姓名|名字|name/i);
   let iIg=find(/ig.*(帳號|account|id|handle)|instagram/i,/^ig$/i);
+  let iTab=find(/桌號|^桌$|table/i),iCap=find(/桌長|captain|host/i);
   let iNo=find(/報名編號|編號|^no\.?$|^id$/i);
   let iSt=find(/狀態|status/i);
   let iNat=find(/國籍|國家|nationality|country/i);
   let body=rows;
-  if(iName>=0)body=rows.slice(1);else{iName=0;iIg=1;iNat=2;iNo=-1;iSt=-1}
+  if(iName>=0)body=rows.slice(1);else{iName=0;iIg=1;iNat=2;iNo=-1;iSt=-1;iTab=-1;iCap=-1}
   let skipped=0;const list=[];
   body.forEach(r=>{
     const name=r[iName];if(name==null||!String(name).trim())return;
     if(iSt>=0&&/取消|cancel|退出|不參加/i.test(String(r[iSt]||""))){skipped++;return}
-    list.push(person(name,iIg>=0?r[iIg]:"",iNo>=0?r[iNo]:"",iNat>=0?r[iNat]:""));
+    list.push(person(name,iIg>=0?r[iIg]:"",iNo>=0?r[iNo]:"",iNat>=0?r[iNat]:"",iTab>=0?r[iTab]:"",iCap>=0?r[iCap]:""));
   });
   return {list,skipped};
 }
@@ -767,20 +784,18 @@ function parseOpts(text){
   text.split(/\r?\n/).forEach(l=>{l=l.trim();if(!l)return;const p=l.split("|").map(s=>s.trim());o.push({zh:p[0]||"?",en:p[1]||"",pick:(p[2]||"1")!=="0"})});
   return o.length>=2?o:parseOpts(DEFAULT_OPTS);
 }
-const fromList=()=>LIST.map(r=>person(r[1],r[2],r[0],r[3]));
+const fromList=()=>LIST.map(r=>person(r[2],r[4],"",r[3],r[0],r[1]));
 
 /* ---------- state ---------- */
 function save(){store.set("pd2_people",JSON.stringify(people));store.set("pd2_winners",JSON.stringify(winners));store.set("pd2_sample",isSample?"1":"0")}
 function load(){
   let saved=null;try{saved=JSON.parse(store.get("pd2_people","null"))}catch(e){}
   try{winners=JSON.parse(store.get("pd2_winners","[]"))||[]}catch(e){winners=[]}
-  if(Array.isArray(saved)&&saved.length){
-    people=saved;isSample=store.get("pd2_sample","0")==="1";
-    // fill in nationalities newly added to the built-in list
-    const m=new Map();LIST.forEach(r=>{if(r[3])m.set(String(r[1]).trim()+"|"+cleanIg(r[2]).toLowerCase(),natNorm(r[3]))});
-    let changed=false;people.forEach(p=>{if(p.nat==null)p.nat="";if(!p.nat){const n=m.get(p.name+"|"+p.ig.toLowerCase());if(n){p.nat=n;changed=true}}});
-    if(changed)save();
-  }else if(LIST.length){people=fromList();isSample=false;save()}
+  if(LIST.length&&store.get("pd_listver","")!==LIST_VER){
+    // built-in list was updated: switch to it and start fresh
+    people=fromList();winners=[];isSample=false;store.set("pd_listver",LIST_VER);save();
+  }else if(Array.isArray(saved)&&saved.length){people=saved;isSample=store.get("pd2_sample","0")==="1";people.forEach(p=>{if(p.nat==null)p.nat="";if(p.table==null)p.table="";if(p.cap==null)p.cap=""})}
+  else if(LIST.length){people=fromList();isSample=false;save()}
   else{people=SAMPLE.map(([n,i,c])=>person(n,i,"範例",c));isSample=true}
   $("#optsInput").value=store.get("pd_opts3",DEFAULT_OPTS);
   opts=parseOpts($("#optsInput").value);
@@ -794,7 +809,9 @@ function refresh(renderList=true){
   pool=$("#noRepeat").checked?people.filter(p=>!won.has(p.id)):people.slice();
   const g=new Map();pool.forEach(p=>{if(p.nat){if(!g.has(p.nat))g.set(p.nat,[]);g.get(p.nat).push(p)}});
   natGroups=[...g.entries()].map(([k,arr])=>({key:k,...natInfo(k),people:arr})).sort((a,b)=>b.people.length-a.people.length);
-  $("#sTotal").textContent=people.length;$("#sLeft").textContent=pool.length;$("#sDone").textContent=winners.length;$("#sNat").textContent=natGroups.length;
+  const t=new Map();pool.forEach(p=>{if(p.table){if(!t.has(p.table))t.set(p.table,[]);t.get(p.table).push(p)}});
+  tableGroups=[...t.entries()].map(([k,arr])=>({key:k,cap:(people.find(p=>p.table===k&&p.cap)||{}).cap||"",people:arr})).sort((a,b)=>(parseFloat(a.key)||0)-(parseFloat(b.key)||0)||a.key.localeCompare(b.key));
+  $("#sTotal").textContent=people.length;$("#sLeft").textContent=pool.length;$("#sDone").textContent=winners.length;$("#sNat").textContent=natGroups.length;$("#sTab").textContent=tableGroups.length;
   $("#sampleTag").hidden=!isSample;
   const dl=$("#natList");dl.innerHTML="";new Set([...people.map(p=>p.nat).filter(Boolean),...NAT.map(e=>e[0])]).forEach(v=>{const o=document.createElement("option");o.value=v;dl.append(o)});
   renderWinners();if(renderList)renderPeople();
@@ -805,14 +822,19 @@ function buildSegs(){
     segs=opts.map(o=>({main:(o.en||o.zh).toUpperCase(),sub:o.en?o.zh:"",o}));
     $("#hubTitle").textContent="PRIDE";$("#hubCount").textContent=pool.length+" 人";
   }else{
-    segs=natGroups.length?natGroups.map(g=>({main:g.en.toUpperCase(),sub:(g.zh&&g.zh!==g.en?g.zh+" · ":"")+g.people.length+" 人",g})):[{main:"NO DATA",sub:"還沒有國籍資料",color:"#3a2a5c"}];
+    if(mode==="nat"){
+    segs=natGroups.length?natGroups.map(g=>({main:g.en.toUpperCase(),flag:g.flag,sub:(g.zh&&g.zh!==g.en?g.zh+" · ":"")+g.people.length+" 人",g})):[{main:"NO DATA",sub:"還沒有國籍資料",color:"#3a2a5c"}];
     $("#hubTitle").textContent="WORLD";$("#hubCount").textContent=natGroups.length+" 國";
+    }else{
+    segs=tableGroups.length?tableGroups.map(g=>({main:g.key,sub:"",g})):[{main:"NO DATA",sub:"還沒有桌號資料",color:"#3a2a5c"}];
+    $("#hubTitle").textContent="TABLE";$("#hubCount").textContent=tableGroups.length+" 桌";
+    }
   }
 }
 function renderWinners(){
   const ol=$("#winList");ol.innerHTML="";
   winners.slice().reverse().forEach(w=>{
-    const li=document.createElement("li");li.append(document.createTextNode(w.name+" "));
+    const li=document.createElement("li");const fl=natInfo(w.nat).flag;if(fl){const f=document.createElement("span");f.className="flag";f.textContent=fl;li.append(f)}li.append(document.createTextNode(w.name+" "));
     if(w.ig){const s=document.createElement("span");s.className="ig";s.textContent="@"+w.ig;li.append(s,document.createTextNode(" "))}
     const t=document.createElement("span");t.textContent="· "+w.task;li.append(t);ol.append(li);
   });
@@ -821,13 +843,13 @@ function renderWinners(){
 function renderPeople(){
   if($("#drawer").hidden)return;
   const q=$("#search").value.trim().toLowerCase(),won=wonIds(),tb=$("#peopleBody");tb.innerHTML="";
-  const list=q?people.filter(p=>(p.name+" "+p.ig+" "+p.no+" "+p.nat+" "+natInfo(p.nat).en).toLowerCase().includes(q)):people;
+  const list=q?people.filter(p=>(p.name+" "+p.ig+" "+p.no+" "+p.nat+" "+natInfo(p.nat).en+" 桌"+p.table+" "+p.cap).toLowerCase().includes(q)):people;
   const noNat=people.filter(p=>!p.nat).length;
   $("#listCount").textContent=`（${people.length} 人${q?`，符合 ${list.length}`:""}${noNat?`，${noNat} 人未填國籍`:""}）`;
   const frag=document.createDocumentFragment();
   list.forEach(p=>{
     const tr=document.createElement("tr");if(won.has(p.id))tr.className="won";if(p.id===lastAddedId)tr.classList.add("new");
-    const a=document.createElement("td");a.className="no";a.textContent=p.no;
+    const a=document.createElement("td");a.className="no";a.textContent=p.table||p.no;
     const b=document.createElement("td");b.textContent=p.name;
     if(p.id===lastAddedId){const c=document.createElement("span");c.className="chip";c.textContent="新";b.append(c)}
     if(won.has(p.id)){const c=document.createElement("span");c.className="chip won";c.textContent="已抽中";b.append(c)}
@@ -904,20 +926,21 @@ function download(name,rows){
     $("#listMsg").textContent=`已下載 ${name}`;}catch(e){$("#listMsg").textContent="這個環境不允許下載檔案。"}
 }
 const stamp=()=>new Date().toISOString().slice(0,10);
-$("#exportBtn").onclick=()=>download(`名單_${stamp()}.csv`,[["報名編號","姓名","IG帳號","國籍"],...people.map(p=>[p.no,p.name,p.ig,p.nat])]);
-$("#exportWinBtn").onclick=()=>download(`得主_${stamp()}.csv`,[["順序","報名編號","姓名","IG帳號","國籍","抽到","時間"],...winners.map((w,i)=>[i+1,w.no,w.name,w.ig,w.nat||"",w.task,new Date(w.t).toLocaleString("zh-TW")])]);
+$("#exportBtn").onclick=()=>download(`名單_${stamp()}.csv`,[["桌號","桌長","姓名","國籍","IG"],...people.map(p=>[p.table,p.cap,p.name,p.nat,p.ig])]);
+$("#exportWinBtn").onclick=()=>download(`得主_${stamp()}.csv`,[["順序","桌號","姓名","IG","國籍","抽到","時間"],...winners.map((w,i)=>[i+1,w.table||"",w.name,w.ig,w.nat||"",w.task,new Date(w.t).toLocaleString("zh-TW")])]);
 
 /* ---------- wheel ---------- */
 const cv=$("#wheel"),ctx=cv.getContext("2d");
-const F_EN='"Bungee","Noto Sans TC",sans-serif',F_ZH='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+const F_EN='"Bungee","Noto Sans TC",sans-serif',F_ZH='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif',F_EMO='"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif';
 function sizeWheel(){const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);const s=Math.round(r.width*dpr);if(s>0&&cv.width!==s){cv.width=s;cv.height=s}drawWheel()}
 function fit(txt,font,base,maxW){ctx.font=font(base);const w=ctx.measureText(txt).width;return w>maxW?base*maxW/w:base}
 function drawLabel(s,R,S,seg,fg){
   const maxW=R*0.6,x=R*0.9,base=S*0.05,enF=z=>`400 ${z}px ${F_EN}`,zhF=z=>`700 ${z}px ${F_ZH}`;
-  let lines=[s.main],sz=fit(s.main,enF,base,maxW);
-  if(sz<base*0.75&&s.main.includes(" ")){
+  const mw=s.flag?maxW*0.78:maxW;
+  let lines=[s.main],sz=fit(s.main,enF,base,mw);
+  if(sz<base*0.75&&s.main.trim().includes(" ")){
     const w=s.main.split(" ");let best=null;
-    for(let k=1;k<w.length;k++){const l=[w.slice(0,k).join(" "),w.slice(k).join(" ")];const z=Math.min(fit(l[0],enF,base,maxW),fit(l[1],enF,base,maxW));if(!best||z>best.z)best={l,z}}
+    for(let k=1;k<w.length;k++){const l=[w.slice(0,k).join(" "),w.slice(k).join(" ")];const z=Math.min(fit(l[0],enF,base,mw),fit(l[1],enF,base,mw));if(!best||z>best.z)best={l,z}}
     if(best&&best.z>sz){lines=best.l;sz=best.z}
   }
   let subSz=s.sub?fit(s.sub,zhF,S*0.024,maxW):0;
@@ -925,7 +948,9 @@ function drawLabel(s,R,S,seg,fg){
   if(h>maxH){const k=maxH/h;sz*=k;subSz*=k}
   let y=-(lines.length*sz+(s.sub?subSz*1.3:0))/2;
   ctx.textAlign="right";ctx.textBaseline="top";ctx.fillStyle=fg;ctx.font=enF(sz);
-  lines.forEach(l=>{ctx.fillText(l,x,y+sz*0.04);y+=sz});
+  lines.forEach((l,k)=>{ctx.font=enF(sz);ctx.fillText(l,x,y+sz*0.04);
+    if(k===0&&s.flag){const w=ctx.measureText(l).width;ctx.font=`${sz*0.95}px ${F_EMO}`;ctx.fillText(s.flag,x-w-sz*0.3,y+sz*0.02)}
+    y+=sz});
   if(s.sub){ctx.globalAlpha=.8;ctx.font=zhF(subSz);ctx.fillText(s.sub,x,y+subSz*0.3);ctx.globalAlpha=1}
 }
 function drawWheel(){
@@ -972,19 +997,21 @@ function spinTo(n,done){
     setTimeout(()=>animate(end1,end1+(a1-a2),1500,t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,n,()=>setTimeout(()=>done(final),250)),900);
   });
 }
-function setBusy(b){spinning=b;$("#spinBtn").disabled=b;$("#modeTask").disabled=b;$("#modeNat").disabled=b}
-function setResult(label,en,zh,hint){
-  $("#resLabel").textContent=label;$("#taskEn").textContent=en;$("#taskZh").textContent=zh;
+function setBusy(b){spinning=b;$("#spinBtn").disabled=b;$("#modeTask").disabled=b;$("#modeNat").disabled=b;$("#modeTable").disabled=b}
+function withFlag(el,flag,text){el.textContent="";if(flag){const f=document.createElement("span");f.className="flag";f.textContent=flag;el.append(f)}el.append(text)}
+function setResult(label,en,zh,hint,flag){
+  $("#resLabel").textContent=label;withFlag($("#taskEn"),flag,en);$("#taskZh").textContent=zh;
   $("#whoHint").textContent=hint||"";$("#whoHint").hidden=!hint;$("#whoName").textContent="";$("#whoIg").textContent="";$("#whoNo").textContent="";$("#who").className="who";
 }
 function spin(){
   if(spinning)return;
   if(mode==="task"){
     if(opts.some(o=>o.pick)&&!pool.length){setResult("ALL DRAWN · 名單抽完了","EVERYONE'S DRAWN","名單抽完了","請到「名單 / 設定」加人，或清除抽中紀錄。");return}
-  }else if(!natGroups.length){setResult("COUNTRY DRAW · 國籍抽獎","NO COUNTRY DATA","名單還沒有國籍資料","請到「名單 / 設定」幫參加者填上國籍，或匯入有「國籍」欄的 Excel。");return}
+  }else if(mode==="nat"&&!natGroups.length){setResult("COUNTRY DRAW · 國籍抽獎","NO COUNTRY DATA","名單還沒有國籍資料","請到「名單 / 設定」幫參加者填上國籍，或匯入有「國籍」欄的 Excel。");return}
+  else if(mode==="table"&&!tableGroups.length){setResult("TABLE DRAW · 桌號抽獎","NO TABLE DATA","名單還沒有桌號資料","請匯入有「桌號」欄的 Excel。");return}
   buildSegs();drawWheel();setBusy(true);
   setResult("SPINNING · 轉動中","SPINNING…","轉轉轉…","");
-  spinTo(segs.length,i=>mode==="task"?landedTask(segs[i].o):landedNat(segs[i].g));
+  spinTo(segs.length,i=>mode==="task"?landedTask(segs[i].o):mode==="nat"?landedNat(segs[i].g):landedTable(segs[i].g));
 }
 function landedTask(o){
   setResult("THE WHEEL SAYS · 轉到了",(o.en||o.zh).toUpperCase(),o.en?o.zh:"","");beep(1200,.15,"triangle",.07);
@@ -1001,31 +1028,43 @@ function rollName(o){
     const p=pool[rnd(pool.length)];$("#whoName").textContent=p.name;$("#whoIg").textContent=p.ig?"@"+p.ig:"";
     beep(500+rnd(400),.02,"sine",.03);total+=delay;delay*=1.09;
     if(total<3200)return setTimeout(step,delay);
-    $("#whoName").textContent=winner.name;$("#whoIg").textContent=winner.ig?"@"+winner.ig:"";$("#whoNo").textContent=noText(winner);
+    $("#whoName").textContent="";const wf=natInfo(winner.nat).flag;if(wf){const f=document.createElement("span");f.className="flag";f.textContent=wf;$("#whoName").append(f)}$("#whoName").append(winner.name);$("#whoIg").textContent=winner.ig?"@"+winner.ig:"";$("#whoNo").textContent=noText(winner);
     who.className="who done";
-    winners.push({id:winner.id,no:winner.no,name:winner.name,ig:winner.ig,nat:winner.nat,task:(o.en?o.en+" ":"")+o.zh,t:Date.now()});
+    winners.push({id:winner.id,no:winner.no,table:winner.table,name:winner.name,ig:winner.ig,nat:winner.nat,task:(o.en?o.en+" ":"")+o.zh,t:Date.now()});
     save();setBusy(false);refresh();fanfare();burst(220);
   })();
 }
-const noText=p=>p.no&&p.no!=="範例"?(p.no==="現場"?"現場加入":"報名編號 "+p.no):"";
+function noText(p){const i=natInfo(p.nat),bits=[];if(p.nat)bits.push(i.en+(i.zh&&i.zh!==i.en?" "+i.zh:""));if(p.table)bits.push("Table "+p.table);else if(p.no==="現場")bits.push("現場加入");else if(p.no&&p.no!=="範例")bits.push("報名編號 "+p.no);return bits.join(" · ")}
 
-/* ---------- country board ---------- */
-let boardKey=null,boardBusy=false;
+/* ---------- name board (country / table) ---------- */
+let boardKind=null,boardKey=null,boardBusy=false;
 function landedNat(g){
-  setResult("COUNTRY · 抽中國籍",g.en.toUpperCase(),(g.zh&&g.zh!==g.en?g.zh+" · ":"")+g.people.length+" 人","");
+  setResult("COUNTRY · 抽中國籍",g.en.toUpperCase(),(g.zh&&g.zh!==g.en?g.zh+" · ":"")+g.people.length+" 人","",g.flag);
   beep(1200,.15,"triangle",.07);burst(120);setBusy(false);
-  setTimeout(()=>openBoard(g.key),1100);
+  setTimeout(()=>openBoard("nat",g.key),1100);
 }
-function boardCandidates(){const won=wonIds(),nr=$("#noRepeat").checked;return people.filter(p=>p.nat===boardKey&&!(nr&&won.has(p.id)))}
-function openBoard(key){
-  boardKey=key;const info=natInfo(key);
-  $("#boardEn").textContent=info.en.toUpperCase();$("#boardZh").textContent=info.zh&&info.zh!==info.en?info.zh:"";
+function landedTable(g){
+  setResult("TABLE · 抽中桌號","TABLE "+g.key,(g.cap?"桌長 "+g.cap+" · ":"")+g.people.length+" 人","");
+  beep(1200,.15,"triangle",.07);burst(120);setBusy(false);
+  setTimeout(()=>openBoard("table",g.key),1100);
+}
+const inBoard=p=>boardKind==="nat"?p.nat===boardKey:p.table===boardKey;
+function boardCandidates(){const won=wonIds(),nr=$("#noRepeat").checked;return people.filter(p=>inBoard(p)&&!(nr&&won.has(p.id)))}
+function boardTitle(){
+  if(boardKind==="nat"){const i=natInfo(boardKey);return {eb:"COUNTRY DRAW · 國籍抽獎",flag:i.flag,en:i.en.toUpperCase(),zh:i.zh&&i.zh!==i.en?i.zh:"",tag:"Country "+i.en}}
+  const cap=(people.find(p=>p.table===boardKey&&p.cap)||{}).cap||"";
+  return {eb:"TABLE DRAW · 桌號抽獎",en:"TABLE "+boardKey,zh:cap?"桌長 Captain · "+cap:"",tag:"Table "+boardKey};
+}
+function openBoard(kind,key){
+  boardKind=kind;boardKey=key;const t=boardTitle();
+  $("#boardEyebrow").textContent=t.eb;withFlag($("#boardEn"),t.flag,t.en);$("#boardZh").textContent=t.zh;
   renderBoard();$("#reveal").hidden=true;$("#board").hidden=false;$("#boardGrid").scrollTop=0;$("#boardDraw").focus();
 }
 function renderBoard(){
-  const won=wonIds(),all=people.filter(p=>p.nat===boardKey),cand=boardCandidates(),g=$("#boardGrid");g.innerHTML="";
+  const won=wonIds(),all=people.filter(inBoard),cand=boardCandidates(),g=$("#boardGrid");g.innerHTML="";
   all.forEach(p=>{const d=document.createElement("div");d.className="nchip";d.dataset.id=p.id;if(won.has(p.id))d.classList.add("won");
-    const b=document.createElement("b");b.textContent=p.name;d.append(b);if(p.ig){const s=document.createElement("span");s.textContent="@"+p.ig;d.append(s)}g.append(d)});
+    const b=document.createElement("b");const fl=natInfo(p.nat).flag;if(fl){const f=document.createElement("span");f.className="flag";f.style.display="inline";f.textContent=fl;b.append(f)}b.append(p.name);d.append(b);
+    if(p.ig){const s=document.createElement("span");s.textContent="@"+p.ig;d.append(s)}g.append(d)});
   $("#boardCount").textContent=`${cand.length} 人可抽 / ${all.length} 人`;
   $("#boardDraw").disabled=!cand.length;
 }
@@ -1039,12 +1078,13 @@ function boardDraw(){
     light(cand.length>1?cand[rnd(cand.length)]:winner);beep(600+rnd(500),.025,"sine",.035);
     total+=delay;delay*=1.08;
     if(total<4200)return setTimeout(step,delay);
-    light(winner);prev.classList.remove("hot");prev.classList.add("win");
-    winners.push({id:winner.id,no:winner.no,name:winner.name,ig:winner.ig,nat:winner.nat,task:"Country "+natInfo(winner.nat).en,t:Date.now()});
+    light(winner);if(prev){prev.classList.remove("hot");prev.classList.add("win")}
+    const t=boardTitle();
+    winners.push({id:winner.id,no:winner.no,table:winner.table,name:winner.name,ig:winner.ig,nat:winner.nat,task:t.tag,t:Date.now()});
     save();refresh();fanfare();burst(240);
     setTimeout(()=>{
-      const info=natInfo(boardKey);
-      $("#revLabel").textContent=`WINNER · ${info.en.toUpperCase()}${info.zh&&info.zh!==info.en?" "+info.zh:""}`;
+      $("#revLabel").textContent="WINNER · "+t.tag.toUpperCase();
+      $("#revFlag").textContent=natInfo(winner.nat).flag;
       $("#revName").textContent=winner.name;$("#revIg").textContent=winner.ig?"@"+winner.ig:"";$("#revNo").textContent=noText(winner);
       $("#revAgain").hidden=!boardCandidates().length;$("#reveal").hidden=false;
       boardBusy=false;$("#boardBack").disabled=false;$("#boardDraw").disabled=!boardCandidates().length;
@@ -1069,19 +1109,25 @@ function cfFrame(){cx.clearRect(0,0,cf.width,cf.height);
 /* ---------- controls ---------- */
 function setMode(m,initial){
   mode=m;store.set("pd_mode",m);
-  $("#modeTask").setAttribute("aria-pressed",m==="task");$("#modeNat").setAttribute("aria-pressed",m==="nat");
-  $("#sNatWrap").hidden=m!=="nat";rotation=0;buildSegs();drawWheel();
+  $("#modeTask").setAttribute("aria-pressed",m==="task");$("#modeNat").setAttribute("aria-pressed",m==="nat");$("#modeTable").setAttribute("aria-pressed",m==="table");
+  $("#sNatWrap").hidden=m!=="nat";$("#sTabWrap").hidden=m!=="table";rotation=0;buildSegs();drawWheel();
   if(m==="task")setResult("READY? · 準備好了嗎","SPIN THE WHEEL!","按下轉盤開始","轉盤決定任務，再從名單隨機跳出一位幸運兒，顯示名字與 IG。");
+  else if(m==="table")setResult("TABLE DRAW · 桌號抽獎","PICK A TABLE!","先抽桌號，再從這一桌抽一位",tableGroups.length?`共 ${tableGroups.length} 桌，每桌機率相同。抽中桌號後會列出這桌所有人，再按 DRAW 抽一位。`:"名單還沒有桌號資料。");
   else setResult("COUNTRY DRAW · 國籍抽獎","PICK A COUNTRY!","先抽國籍，再從該國名單抽一位",natGroups.length?`共 ${natGroups.length} 個國籍，每個國籍機率相同。抽中國籍後會列出所有人，再按 DRAW 抽一位。`:"名單還沒有國籍資料。請到「名單 / 設定」幫參加者填上國籍，或匯入有「國籍」欄的 Excel。");
 }
 $("#modeTask").onclick=()=>{if(!spinning)setMode("task")};
 $("#modeNat").onclick=()=>{if(!spinning)setMode("nat")};
+$("#modeTable").onclick=()=>{if(!spinning)setMode("table")};
+function menu(o){$("#menu").hidden=!o;$("#menuBtn").setAttribute("aria-expanded",o)}
+$("#menuBtn").onclick=e=>{e.stopPropagation();menu($("#menu").hidden)};
+document.addEventListener("click",e=>{if(!$("#menu").hidden&&!e.target.closest(".menu-wrap"))menu(false)});
+$("#menu").addEventListener("click",e=>{if(e.target.closest("button"))menu(false)});
 function openD(o,focus){$("#drawer").hidden=!o;$("#scrim").hidden=!o;if(o){renderPeople();(focus||$("#closeDrawer")).focus()}}
 $("#openDrawer").onclick=()=>openD(true);
 $("#quickAdd").onclick=()=>{openD(true,$("#addName"));$("#drawer").scrollTop=0};
 $("#closeDrawer").onclick=()=>openD(false);$("#scrim").onclick=()=>openD(false);
-function setClean(c){document.body.classList.toggle("clean",c);$("#chromeBtn").hidden=!c;store.set("pd_clean",c?"1":"0")}
-$("#hideChrome").onclick=()=>setClean(true);$("#chromeBtn").onclick=()=>setClean(false);
+function setClean(c){document.body.classList.toggle("clean",c);$("#hideChrome").textContent=c?"顯示模式按鈕":"隱藏模式按鈕";store.set("pd_clean",c?"1":"0")}
+$("#hideChrome").onclick=()=>setClean(!document.body.classList.contains("clean"));
 function setSound(s){sound=s;store.set("pd_sound",s?"1":"0");$("#soundBtn").textContent="音效 "+(s?"開":"關");$("#soundBtn").setAttribute("aria-pressed",s)}
 $("#soundBtn").onclick=()=>setSound(!sound);
 $("#fsBtn").onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
@@ -1096,7 +1142,7 @@ $("#resetBtn").onclick=e=>{
 };
 addEventListener("keydown",e=>{
   const tag=document.activeElement.tagName;
-  if(e.key==="Escape"){if(!$("#drawer").hidden)openD(false);else if(!$("#reveal").hidden)$("#reveal").hidden=true;else if(!$("#board").hidden&&!boardBusy)closeBoard()}
+  if(e.key==="Escape"){if(!$("#menu").hidden)menu(false);else if(!$("#drawer").hidden)openD(false);else if(!$("#reveal").hidden)$("#reveal").hidden=true;else if(!$("#board").hidden&&!boardBusy)closeBoard()}
   if(e.code==="Space"&&tag!=="TEXTAREA"&&tag!=="INPUT"&&$("#drawer").hidden){
     e.preventDefault();
     if(!$("#board").hidden){if($("#reveal").hidden)boardDraw()}else spin();
@@ -1104,7 +1150,7 @@ addEventListener("keydown",e=>{
 });
 addEventListener("resize",sizeWheel);
 load();sizeWheel();
-if(document.fonts)document.fonts.ready.then(drawWheel);
+if(document.fonts){document.fonts.ready.then(drawWheel);try{document.fonts.load('40px "Noto Color Emoji"',"\u{1F1F9}\u{1F1FC}").then(drawWheel,()=>{})}catch(e){}}
 })();
 </script>
 
